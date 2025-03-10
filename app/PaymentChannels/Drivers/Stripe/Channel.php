@@ -1,0 +1,290 @@
+<?php
+
+namespace App\PaymentChannels\Drivers\Stripe;
+
+use App\Models\Order;
+// use App\Models\User;
+use App\User;
+use App\Models\Region;
+use App\Models\PaymentChannel;
+use App\PaymentChannels\BasePaymentChannel;
+use App\PaymentChannels\IChannel;
+use Illuminate\Http\Request;
+use Stripe\Checkout\Session;
+use Stripe\Customer;
+use Stripe\Stripe;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SubscriptionRenewal;
+use Exception;
+use App\Models\OrderItem;
+use App\Models\Subscribe;
+
+class Channel extends BasePaymentChannel implements IChannel
+{
+    protected $currency;
+    protected $test_mode;
+    protected $api_key;
+    protected $api_secret;
+    protected $order_session_key;
+
+
+    protected array $credentialItems = [
+        'api_key',
+        'api_secret',
+    ];
+
+    /**
+     * Channel constructor.
+     * @param PaymentChannel $paymentChannel
+     */
+    public function __construct(PaymentChannel $paymentChannel)
+    {
+        $this->currency = currency();
+        $this->order_session_key = 'strip.payments.order_id';
+        $this->setCredentialItems($paymentChannel);
+    }
+
+    public function paymentRequest(Order $order)
+    {
+        
+        $price = round($this->makeAmountByCurrency($order->total_amount, $this->currency),2);
+        $generalSettings = getGeneralSettings();
+        $currency = currency();
+        $currency = $currency == 'USD' ? 'EUR' : $currency;   
+
+        Stripe::setApiKey($this->api_secret);
+
+        $successUrl = (session()->get('mobileHeader') == 1)
+            ? 'https://kemetic.app/paymentSuccess'
+            : $this->makeCallbackUrl('success');
+
+        $checkoutData = [
+             'payment_method_types' => ['card', 'bancontact', 'ideal', 'p24', 'sofort', 'klarna', 'giropay', 'eps'],
+           // 'payment_method_types' => ['card'],
+            'line_items' => [
+                [
+                    'price_data' => [
+                        'currency' => $currency,
+                        'unit_amount_decimal' => $price * 100,
+                        'product_data' => [
+                            'name' => $generalSettings['site_name'] . ' payment',
+                        ],
+                    ],
+                    'quantity' => 1,
+                ]
+            ],
+            'mode' => 'payment',
+            'success_url' => $successUrl,
+            // 'cancel_url' => $cancelUrl,
+        ];
+
+        // Add cancel_url only if mobileHeader != 1
+        if (session()->get('mobileHeader') != 1) {
+            $checkoutData['cancel_url'] = $this->makeCallbackUrl('cancel');
+        }
+
+        // Create the checkout session
+        $checkout = Session::create($checkoutData);
+
+        // print_r($checkout);die;    
+        /*$order->update([
+            'reference_id' => $checkout->id,
+        ]);*/
+
+        session()->put($this->order_session_key, $order->id);
+
+        if (session()->get('mobileHeader') == 1) {
+            return apiResponse2(1, 'retrieved', 'Payment Url', ['url' => $checkout->url, 'session_id' => $checkout->id, 'order_id' => $order->id]);
+        }
+
+        $Html = '<script src="https://js.stripe.com/v3/"></script>';
+        $Html .= '<script type="text/javascript">let stripe = Stripe("' . $this->api_key . '");';
+        $Html .= 'stripe.redirectToCheckout({ sessionId: "' . $checkout->id . '" }); </script>';
+
+        echo $Html;
+    }
+    
+     public function recurringPaymentRequest(Order $order)
+    {
+        
+        $orderItems = OrderItem::where('order_id', $order->id)->first();
+        $subscribe = Subscribe::where('id', $orderItems->subscribe_id)->first();
+
+        // echo "<pre>";
+        // print_r($orderItems);
+        // die;
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+
+            $successUrl = (session()->get('mobileHeader') == 1)
+                ? 'https://kemetic.app/paymentSuccess'
+                : $this->makeRecurringCallbackUrl('success');
+                
+            $user = User::findOrFail($order->user_id);
+           
+            // Ensure user has a Stripe customer ID
+            if (!$user->stripe_customer_id) {
+                $state = Region::where('id', $user->district_id)->where('type', 'province')->first();
+                $city = Region::where('id', $user->city_id)->where('type', 'city')->first();
+                $customer = Customer::create([
+                    'email'  => $user->email,
+                    'name'   => $user->full_name,
+                    'address' => [
+                        'line1'       => $user->address ?? '6th Floor, Indore',
+                        'line2'       => $user->address ?? '1st Floor, Indore',
+                        'city'        => $city->title ?? 'Indore',
+                        'state'       => $state->title ?? 'Madhya Pradesh',
+                        'postal_code' => $user->zip_code ?? '452001',
+                        'country'     => 'IN',
+                    ],
+                ]);
+                $user->stripe_customer_id = $customer->id;
+                $user->save();
+            } else {
+                $customer = Customer::retrieve($user->stripe_customer_id);
+            }
+
+            // ✅ Create Stripe Checkout Session with a 1-Minute Recurring Payment Plan
+            $checkoutData = [
+                'payment_method_types' => ['card'],
+                'mode'                 => 'subscription',
+                'customer'             => $customer->id,
+                'billing_address_collection' => 'required',
+                'line_items' => [[
+                    'price'    => $subscribe->price_id, // ✅ Use a test price with a 1-minute interval
+                    'quantity' => 1,
+                ]],
+                'metadata' => [
+                    'customer_name'   => $user->name,
+                    'customer_email'  => $user->email,
+                    'order_id'        => $order->id,
+                ],
+                'success_url' => $successUrl,
+            ];
+
+            // Add cancel_url only if mobileHeader != 1
+            if (session()->get('mobileHeader') != 1) {
+                $checkoutData['cancel_url'] = $this->makeCallbackUrl('cancel');
+            }
+            // Create the checkout session
+            $checkout = Session::create($checkoutData);
+
+            // Store session in Laravel session
+            session()->put($this->order_session_key, $order->id);
+
+            if (session()->get('mobileHeader') == 1) {
+                return apiResponse2(1, 'retrieved', 'Payment Url', [
+                    'url'        => $checkout->url,
+                    'session_id' => $checkout->id,
+                    'order_id'   => $order->id
+                ]);
+            }
+            // echo "<pre>";print_r($checkout->id);
+            // die();
+            $Html = '<script src="https://js.stripe.com/v3/"></script>';
+            $Html .= '<script type="text/javascript">let stripe = Stripe("' . env('STRIPE_KEY') . '");';
+            $Html .= 'stripe.redirectToCheckout({ sessionId: "' . $checkout->id . '" }); </script>';
+
+            echo $Html;
+        } catch (Exception $e) {
+            return response()->json([
+                'error'   => 'Subscription creation failed!',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function makeCallbackUrl($status)
+    {
+        return url("/payments/verify/Stripe?status=$status&session_id={CHECKOUT_SESSION_ID}");
+    }
+    
+    private function makeRecurringCallbackUrl($status)
+    {
+        return url("/payments/recurringVerify/Stripe?status=$status&session_id={CHECKOUT_SESSION_ID}");
+    }
+
+
+    public function verify(Request $request)
+    {
+        $data = $request->all();
+        Log::info('verify request CHANNEL : ', $data);
+        $status = $data['status'];
+
+        $order_id = session()->get($this->order_session_key, null) ?? $data['order_id'];
+        Log::info('order_id : ', [$order_id]);
+        session()->forget($this->order_session_key);
+
+        $user = auth()->user() ?? apiAuth();
+
+        $order = Order::where('id', $order_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        // echo "<pre>";print_r($order);
+        // die();
+        if ($status == 'success' and !empty($request->session_id) and !empty($order)) {
+            Stripe::setApiKey($this->api_secret);
+
+            $session = Session::retrieve($request->session_id);
+
+            if (!empty($session) and $session->payment_status == 'paid') {
+                $order->update([
+                    'status' => Order::$paying
+                ]);
+
+                return $order;
+            }
+        }
+
+        // is fail
+
+        if (!empty($order)) {
+            $order->update(['status' => Order::$fail]);
+        }
+
+        return $order;
+    }
+    
+    public function recurringVerify(Request $request)
+    {
+        $data = $request->all();
+        Log::info('verify request CHANNEL : ', $data);
+        $status = $data['status'];
+
+        $order_id = session()->get($this->order_session_key, null) ?? $data['order_id'];
+        Log::info('order_id : ', [$order_id]);
+        session()->forget($this->order_session_key);
+
+        $user = auth()->user() ?? apiAuth();
+
+        $order = Order::where('id', $order_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        // echo "<pre>";print_r($order);
+        // die();
+        if ($status == 'success' and !empty($request->session_id) and !empty($order)) {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+
+            $session = Session::retrieve($request->session_id);
+
+            if (!empty($session) and $session->payment_status == 'paid') {
+                $order->update([
+                    'status' => Order::$paying
+                ]);
+
+                return $order;
+            }
+        }
+
+        // is fail
+
+        if (!empty($order)) {
+            $order->update(['status' => Order::$fail]);
+        }
+
+        return $order;
+    }
+}

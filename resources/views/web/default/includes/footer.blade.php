@@ -177,6 +177,24 @@
 </footer>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var isLoggedIn = @json(Auth::check()); // Check if the user is logged in
+
+        document.querySelectorAll(".footer-link a").forEach(function(link) {
+            if (link.textContent.trim() === "- Media kit Affiliate partners") {
+                link.addEventListener("click", function(event) {
+                    if (!isLoggedIn) {
+                        event.preventDefault(); // Prevent navigation
+                        window.location.href = "/login"; // Redirect to login page
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+<script>
     $(document).ready(function() {
     // Check if the cookie consent is already given
     if (!getCookie('cookiesAccepted')) {

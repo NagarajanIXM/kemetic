@@ -111,9 +111,6 @@ class Channel extends BasePaymentChannel implements IChannel
         $orderItems = OrderItem::where('order_id', $order->id)->first();
         $subscribe = Subscribe::where('id', $orderItems->subscribe_id)->first();
 
-        // echo "<pre>";
-        // print_r($orderItems);
-        // die;
         try {
             Stripe::setApiKey(env('STRIPE_SECRET'));
 
@@ -147,7 +144,7 @@ class Channel extends BasePaymentChannel implements IChannel
 
             // ✅ Create Stripe Checkout Session with a 1-Minute Recurring Payment Plan
             $checkoutData = [
-                'payment_method_types' => ['card'],
+                'payment_method_types' => ['card', 'bancontact', 'ideal', 'sofort'],
                 'mode'                 => 'subscription',
                 'customer'             => $customer->id,
                 'billing_address_collection' => 'required',
@@ -180,8 +177,7 @@ class Channel extends BasePaymentChannel implements IChannel
                     'order_id'   => $order->id
                 ]);
             }
-            // echo "<pre>";print_r($checkout->id);
-            // die();
+           
             $Html = '<script src="https://js.stripe.com/v3/"></script>';
             $Html .= '<script type="text/javascript">let stripe = Stripe("' . env('STRIPE_KEY') . '");';
             $Html .= 'stripe.redirectToCheckout({ sessionId: "' . $checkout->id . '" }); </script>';

@@ -29,70 +29,91 @@ use Stripe\Webhook;
 
 class PaymentController extends Controller
 {
-     public function handleWebhook(Request $request)
+    public function handleWebhook(Request $request)
     {
         try {
             // Set Stripe API key from .env file
             Stripe::setApiKey(env('STRIPE_KEY'));
-
+    
             // Retrieve webhook payload
             $payload = $request->all();
             Log::info('Stripe Webhook Received', $payload);
-
+    
             // Ensure the 'type' key exists
             if (!isset($payload['type'])) {
                 return response()->json(['error' => 'Invalid webhook payload'], 400);
             }
-
+    
             // Handle successful payment event
             if ($payload['type'] === 'invoice.payment_succeeded') {
                 $invoice = $payload['data']['object'];
-
+    
                 // Ensure necessary keys exist in the payload
                 if (!isset($invoice['customer'], $invoice['subscription'])) {
                     return response()->json(['error' => 'Missing customer or subscription ID'], 400);
                 }
-
+    
                 $customerId = $invoice['customer'];
                 $subscriptionId = $invoice['subscription'];
-
+    
                 // Find the user based on Stripe Customer ID
                 $user = User::where('stripe_customer_id', $customerId)->first();
-
+    
                 if ($user) {
                     // Update subscription status in the database
                     $user->update([
                         'subscription_status' => 'active',
                         'subscription_id' => $subscriptionId,
                     ]);
-
+    
                     // Find the latest subscription sale
                     $lastSubscribeSale = Sale::where('buyer_id', $user->id)
                         ->where('type', Sale::$subscribe)
                         ->whereNull('refund_at')
                         ->latest('created_at')
                         ->first();
-
+    
                     if ($lastSubscribeSale) {
-                        $subscribe = $lastSubscribeSale->subscribe;
-
-                        // Update the subscription end date
-                        // $newEndDate = now()->addDays($subscribe->days)->timestamp; // Assuming `duration` is in days
                         $newEndDate = $invoice['lines']['data'][0]['period']['end'];
-
                         $lastSubscribeSale->update(['created_at' => $newEndDate]);
-
-                        Log::info("Subscription extended to: " . $newEndDate);
+    
+                        Log::info("Subscription extended to: " . date('Y-m-d H:i:s', $newEndDate));
                     } else {
                         Log::warning("No previous subscription sale found for user: " . $user->id);
                     }
-
+    
                     return response()->json(['status' => 'success', 'message' => 'Subscription updated'], 200);
                 } else {
                     Log::warning("User not found for Stripe customer ID: " . $customerId);
                 }
             }
-
+    
+            // Handle subscription cancellation
+            if ($payload['type'] === 'customer.subscription.deleted') {
+                $subscription = $payload['data']['object'];
+                $customerId = $subscription['customer'];
+    
+                $user = User::where('stripe_customer_id', $customerId)->first();
+                if (!$user) {
+                    Log::warning("User not found for Stripe customer ID: " . $customerId);
+                    return response()->json(['error' => 'User not found'], 404);
+                }
+    
+                // Delete subscription record from the sales table
+                Sale::where('buyer_id', $user->id)
+                    ->where('type', Sale::$subscribe)
+                    ->delete();
+    
+                // Update user subscription status
+                $user->update([
+                    'subscription_status' => 'canceled',
+                    'subscription_id' => null,
+                ]);
+    
+                Log::info("Subscription cancelled for user {$user->id}. Sales record deleted.");
+                return response()->json(['status' => 'success', 'message' => 'Subscription cancelled and sales record deleted'], 200);
+            }
+    
             return response()->json([
                 'status' => 'success',
                 'received_payload' => $payload
@@ -102,6 +123,107 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Internal server error'], 500);
         }
     }
+
+    //  public function handleWebhook(Request $request)
+    // {
+    //     try {
+    //         // Set Stripe API key from .env file
+    //         Stripe::setApiKey(env('STRIPE_KEY'));
+
+    //         // Retrieve webhook payload
+    //         $payload = $request->all();
+    //         Log::info('Stripe Webhook Received', $payload);
+
+    //         // Ensure the 'type' key exists
+    //         if (!isset($payload['type'])) {
+    //             return response()->json(['error' => 'Invalid webhook payload'], 400);
+    //         }
+
+    //         // Handle successful payment event
+    //         if ($payload['type'] === 'invoice.payment_succeeded') {
+    //             $invoice = $payload['data']['object'];
+
+    //             // Ensure necessary keys exist in the payload
+    //             if (!isset($invoice['customer'], $invoice['subscription'])) {
+    //                 return response()->json(['error' => 'Missing customer or subscription ID'], 400);
+    //             }
+
+    //             $customerId = $invoice['customer'];
+    //             $subscriptionId = $invoice['subscription'];
+
+    //             // Find the user based on Stripe Customer ID
+    //             $user = User::where('stripe_customer_id', $customerId)->first();
+
+    //             if ($user) {
+    //                 // Update subscription status in the database
+    //                 $user->update([
+    //                     'subscription_status' => 'active',
+    //                     'subscription_id' => $subscriptionId,
+    //                 ]);
+
+    //                 // Find the latest subscription sale
+    //                 $lastSubscribeSale = Sale::where('buyer_id', $user->id)
+    //                     ->where('type', Sale::$subscribe)
+    //                     ->whereNull('refund_at')
+    //                     ->latest('created_at')
+    //                     ->first();
+
+    //                 if ($lastSubscribeSale) {
+    //                     $subscribe = $lastSubscribeSale->subscribe;
+
+    //                     // Update the subscription end date
+    //                     // $newEndDate = now()->addDays($subscribe->days)->timestamp; // Assuming `duration` is in days
+    //                     $newEndDate = $invoice['lines']['data'][0]['period']['end'];
+
+    //                     $lastSubscribeSale->update(['created_at' => $newEndDate]);
+
+    //                     Log::info("Subscription extended to: " . $newEndDate);
+    //                 } else {
+    //                     Log::warning("No previous subscription sale found for user: " . $user->id);
+    //                 }
+                    
+    //                 // Handle subscription cancellation
+    //                 if ($event->type === 'customer.subscription.deleted') {
+    //                     $subscription = $event->data->object;
+    //                     $customerId = $subscription->customer;
+            
+    //                     $user = User::where('stripe_customer_id', $customerId)->first();
+    //                     if (!$user) {
+    //                         Log::warning("User not found for Stripe customer ID: " . $customerId);
+    //                         return response()->json(['error' => 'User not found'], 404);
+    //                     }
+            
+    //                     // Delete subscription record from the sales table
+    //                     Sale::where('buyer_id', $user->id)
+    //                         ->where('type', Sale::$subscribe)
+    //                         ->delete();
+            
+    //                     // Update user subscription status
+    //                     $user->update([
+    //                         'subscription_status' => 'canceled',
+    //                         'subscription_id' => null,
+    //                     ]);
+            
+    //                     Log::info("Subscription cancelled for user {$user->id}. Sales record deleted.");
+    //                     return response()->json(['status' => 'success', 'message' => 'Subscription cancelled and sales record deleted'], 200);
+    //                 }
+
+
+    //                 return response()->json(['status' => 'success', 'message' => 'Subscription updated'], 200);
+    //             } else {
+    //                 Log::warning("User not found for Stripe customer ID: " . $customerId);
+    //             }
+    //         }
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'received_payload' => $payload
+    //         ], 200);
+    //     } catch (\Throwable $e) {
+    //         Log::error('Webhook Handling Error: ' . $e->getMessage());
+    //         return response()->json(['error' => 'Internal server error'], 500);
+    //     }
+    // }
     
     // public function handleWebhook(Request $request)
     // {

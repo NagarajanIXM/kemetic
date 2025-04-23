@@ -19,7 +19,7 @@ class AddCartController extends Controller
 {
     public $cookieKey = 'carts';
 
-    public function storeUserWebinarCart($user, $data)
+    public function storeUserWebinarCart($user, $data, $user_as_a_guest)
     {
         $webinar_id = $data['item_id'];
         $ticket_id = $data['ticket_id'] ?? null;
@@ -40,21 +40,35 @@ class AddCartController extends Controller
             }
 
             $activeSpecialOffer = $webinar->activeSpecialOffer();
-
-            Cart::updateOrCreate([
+            
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id'=> 0,
+                    'creator_guest_id' => $user->id,
+                    'webinar_id' => $webinar_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
                 'creator_id' => $user->id,
                 'webinar_id' => $webinar_id,
-            ], [
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time()
-            ]);
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            
 
             return 'ok';
         }
     }
 
-    public function storeUserBundleCart($user, $data)
+    public function storeUserBundleCart($user, $data, $user_as_a_guest)
     {
         $bundle_id = $data['item_id'];
         $ticket_id = $data['ticket_id'] ?? null;
@@ -78,21 +92,36 @@ class AddCartController extends Controller
 
             $activeSpecialOffer = $bundle->activeSpecialOffer();
 
-            Cart::updateOrCreate([
-                'creator_id' => $user->id,
-                'bundle_id' => $bundle_id,
-            ], [
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time()
-            ]);
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id'=> 0,
+                    'creator_guest_id' => $user->id,
+                    'bundle_id' => $bundle_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
+                    'creator_id' => $user->id,
+                    'bundle_id' => $bundle_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            
+            
 
             return 'ok';
         }
 
     }
 
-    public function storeUserProductCart($user, $data)
+    public function storeUserProductCart($user, $data, $user_as_a_guest)
     {
         $product_id = (int) $data['item_id'];
         $specifications = $data['specifications'] ?? null;
@@ -131,14 +160,26 @@ class AddCartController extends Controller
                 'discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
                 'created_at' => time()
             ]);
-           
-            Cart::updateOrCreate([
-                'creator_id' => $user->id,
-                'product_order_id' => $productOrder->id,
-            ], [
-                'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-                'created_at' => time()
-            ]);
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id'=> 0,
+                    'creator_guest_id' => $user->id,
+                    'product_order_id' => $productOrder->id,
+                ], [
+                    'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
+                    'creator_id' => $user->id,
+                    'product_order_id' => $productOrder->id,
+                ], [
+                    'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            
 
             return 'ok';
         }
@@ -147,6 +188,7 @@ class AddCartController extends Controller
     public function store(Request $request)
     {
         $user = apiAuth();
+        //echo print_r($user); die;
         validateParam($request->all(), [
             'item_id' => 'required',
             'item_name' => 'required|in:webinar,bundle,product',
@@ -162,14 +204,23 @@ class AddCartController extends Controller
 
         $data = $request->except('_token');
         $item_name = $data['item_name'];
-
+       
         $result = null;
-
+        $user_as_a_guest=false;
+        if(!$user){
+            $user = new \stdClass(); // Create an empty object for guest users
+            $user->id = $data['device_id'] ?? null;
+            $user_as_a_guest=true;
+            if (!$user->id) {
+                return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+            }
+        }
+        
         if ($item_name == 'webinar') {
             if (Cart::where($rr, $request->input('item_id'))->where('creator_id', $user->id)->count()) {
                 return apiResponse2(0, 'already_in_cart', 'this item is in the cart');
             }
-            $result = $this->storeUserWebinarCart($user, $data);
+            $result = $this->storeUserWebinarCart($user, $data,$user_as_a_guest);
         } elseif ($item_name == 'product') {
             $productOrder = ProductOrder::where('product_id', (int) $request->input('item_id'))->where('buyer_id', $user->id)->orderBy('id', 'desc')->first();
             // print_r($productOrder->id);
@@ -181,12 +232,12 @@ class AddCartController extends Controller
                 }
             }
 
-            $result = $this->storeUserProductCart($user, $data);
+            $result = $this->storeUserProductCart($user, $data,$user_as_a_guest);
         } elseif ($item_name == 'bundle') {
             if (Cart::where($rr, $request->input('item_id'))->where('creator_id', $user->id)->count()) {
                 return apiResponse2(0, 'already_in_cart', 'this item is in the cart');
             }
-            $result = $this->storeUserBundleCart($user, $data);
+            $result = $this->storeUserBundleCart($user, $data,$user_as_a_guest);
         }
 
         if ($result != 'ok') {

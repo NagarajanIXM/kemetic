@@ -53,7 +53,7 @@
 
                                                                 <address class="mt-2">
                                                                     <strong>{{ trans('update.buyer_address') }}:</strong><br>
-                                                                    {{ $buyer->getAddress(true) }}
+                                                                    {{ $buyer->getAddressInvoice(true) }}
                                                                 </address>
                                                             </div>
                                                             <div class="col-md-6 text-md-right">

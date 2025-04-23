@@ -13,6 +13,7 @@ use App\Models\WebinarFilterOption;
 use App\Models\WebinarReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Stat;
 
 class ClassesController extends Controller
 {
@@ -209,5 +210,173 @@ class ClassesController extends Controller
         }
 
         return $query;
+    }
+    
+    // public function updateStats(Request $request)
+    // {
+    //     $webinarId = $request->input('webinar_id');
+    //     $postId = $request->input('post_id');
+    //     $type = $request->input('type'); // like, view, share
+    //     $action = $request->input('action'); // add or remove
+    //     $userId = auth()->id();
+    //     $systemIp = getSystemIP();
+
+    //     $column = match ($type) {
+    //         'like' => 'likes',
+    //         'view' => 'views',
+    //         'share' => 'shares',
+    //         default => null,
+    //     };
+
+    //     if (!$column) {
+    //         return response()->json(['success' => false, 'message' => 'Invalid type']);
+    //     }
+
+    //     // Determine the primary identifier: webinar_id or blog_id (post_id)
+    //     $query = DB::table('stats');
+    //     if ($webinarId) {
+    //         $query->where('webinar_id', $webinarId);
+    //     } elseif ($postId) {
+    //         $query->where('blog_id', $postId);
+    //     } else {
+    //         return response()->json(['success' => false, 'message' => 'Missing webinar_id or post_id']);
+    //     }
+
+    //     // Check for user ID or IP address
+    //     if ($userId) {
+    //         $query->where('user_id', $userId);
+    //     } else {
+    //         $query->where('ip_address', $systemIp);
+    //     }
+
+    //     $existingStat = $query->first();
+
+    //     if ($action === 'add') {
+    //         if ($existingStat) {
+    //             $query->increment($column);
+    //         } else {
+    //             DB::table('stats')->insert([
+    //                 'webinar_id' => $webinarId ?? 0,
+    //                 'blog_id' => $postId ?? 0,
+    //                 'user_id' => $userId ?? 0,
+    //                 'ip_address' => $systemIp ?? null,
+    //                 $column => 1
+    //             ]);
+    //         }
+    //     } elseif ($action === 'remove') {
+    //         if ($existingStat) {
+    //             $query->decrement($column);
+    //         }
+    //     }
+
+    //     return response()->json(['success' => true]);
+    // }
+    
+    public function getStats(Request $request)
+    {
+        $webinarId = $request->input('webinar_id');
+        $postId = $request->input('post_id');
+    
+        $query = Stat::query();
+    
+        // Apply filters only if the parameters are provided
+        if ($webinarId) {
+            $query->where('webinar_id', $webinarId);
+        }
+        if ($postId) {
+            $query->where('blog_id', $postId);
+        }
+    
+        // Get sum of views and likes
+        $views = $query->sum('views');
+        $likes = $query->sum('likes');
+    
+        return response()->json([
+            'success' => true,
+            'updated_views' => $views,
+            'updated_likes' => $likes
+        ]);
+    }
+    
+    public function updateStats(Request $request)
+    {
+        $webinarId = $request->input('webinar_id');
+        $postId = $request->input('post_id');
+        $type = $request->input('type'); // like, view, share
+        $action = $request->input('action'); // add or remove
+        $userId = auth()->id();
+        $systemIp = getSystemIP();
+
+        $column = match ($type) {
+            'like' => 'likes',
+            'view' => 'views',
+            'share' => 'shares',
+            default => null,
+        };
+
+        if (!$column) {
+            return response()->json(['success' => false, 'message' => 'Invalid type']);
+        }
+
+        // Determine the primary identifier: webinar_id or blog_id (post_id)
+        $query = DB::table('stats');
+        if ($webinarId) {
+            $query->where('webinar_id', $webinarId);
+        } elseif ($postId) {
+            $query->where('blog_id', $postId);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Missing webinar_id or post_id']);
+        }
+
+        // Check for user ID or IP address
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } else {
+            $query->where('ip_address', $systemIp);
+        }
+
+        $existingStat = $query->first();
+
+        if ($type === 'view') {
+            // If the user has already viewed, do not increment again
+            if ($existingStat) {
+                // Fetch the latest view count from the database
+                $updatedViews = DB::table('stats')
+                    ->when($webinarId, fn($q) => $q->where('webinar_id', $webinarId))
+                    ->when($postId, fn($q) => $q->where('blog_id', $postId))
+                    ->sum('views');
+
+                return response()->json(['success' => true, 'updated_views' => $updatedViews]);
+            }
+        }
+
+        if ($action === 'add') {
+            if ($existingStat) {
+                $query->increment($column);
+            } else {
+                DB::table('stats')->insert([
+                    'webinar_id' => $webinarId ?? 0,
+                    'blog_id' => $postId ?? 0,
+                    'user_id' => $userId ?? 0,
+                    'ip_address' => $systemIp ?? null,
+                    'likes' => 0,
+                    'views' => 0,
+                    'shares' => 0,
+                    $column => 1
+                ]);
+            }
+        } elseif ($action === 'remove') {
+            if ($existingStat) {
+                $query->decrement($column);
+            }
+        }
+
+        // Fetch the latest view count from the database
+        $updatedViews = DB::table('stats')
+            ->when($webinarId, fn($q) => $q->where('webinar_id', $webinarId))
+            ->when($postId, fn($q) => $q->where('blog_id', $postId))
+            ->sum('views');
+
+        return response()->json(['success' => true, 'updated_views' => $updatedViews]);
     }
 }

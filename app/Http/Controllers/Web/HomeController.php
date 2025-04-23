@@ -19,6 +19,9 @@ use App\Models\Ticket;
 use App\Models\TrendCategory;
 use App\Models\UpcomingCourse;
 use App\Models\Webinar;
+use App\Models\MediaKit;
+use App\Models\MediaTool;
+use App\Models\Translation\CategoryTranslation;
 use App\Models\Testimonial;
 use App\User;
 use Illuminate\Http\Request;
@@ -49,6 +52,53 @@ class HomeController extends Controller
         
 
         return view('web.default.pages.landing-page',compact('subscribes'));
+    }
+    
+    public function media_kit()
+    {
+        $mediaTools = MediaTool::where('status','active')->get();
+        $mediaKit = MediaKit::where('status','active')->get();
+        $categories = CategoryTranslation::where('locale','en')->get();
+        return view('web.default.pages.media-kit', compact('mediaKit','categories', 'mediaTools'));
+    }
+    
+    public function upload_media()
+    {
+        $categories = CategoryTranslation::where('locale','en')->get();
+        return view('web.default.pages.upload_media', compact('categories'));
+    }
+    
+    public function create_media(Request $request)
+    {
+        $request->validate([
+            'category'    => 'required|exists:category_translations,id',
+            'title'       => 'required|string|max:255',
+            'description' => 'required|string',
+            'courseLink'  => 'nullable|string',
+            'video'       => 'required|mimes:mp4,mov,avi,wmv|max:20480', // Max 20MB
+        ]);
+
+        if ($request->hasFile('video')) {
+            $file = $request->file('video');
+            $filename = time() . '_' . $file->getClientOriginalName(); // Unique filename
+            $file->move(public_path('assets/media-kit'), $filename); // Store in public/uploads/videos
+        
+            $videoPath = 'assets/media-kit/' . $filename;
+        } else {
+            return back()->with('error', 'Video file is required.');
+        }
+
+        // Save data to database
+        MediaKit::create([
+            'user_id' => auth()->id(),
+            'category_id' => $request->category,
+            'title'       => $request->title,
+            'description' => $request->description,
+            'course_link' => $request->courseLink,
+            'video_path'  => $videoPath,
+        ]);
+
+        return back()->with('success', 'Media successfully uploaded.');
     }
     
     public static function getActiveSubscribe($userId)

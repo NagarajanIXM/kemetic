@@ -102,7 +102,7 @@
                 </ul>
                </div>
                 <div class="card-footer p-0 border-0 bg-transparent">
-                    <form action="/panel/financial/pay-subscribes" method="post" class="btn-block">
+                    <form action="/panel/financial/recurringPay-subscribes?auto_redirect=1" method="post" class="btn-block">
                         {{ csrf_field() }}
                         <input name="amount" value="{{ $subscribe->price }}" type="hidden">
                         <input name="id" value="{{ $subscribe->id }}" type="hidden">

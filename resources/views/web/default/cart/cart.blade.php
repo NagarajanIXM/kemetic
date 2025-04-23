@@ -1,4 +1,3 @@
-
 @extends(getTemplate().'.layouts.app')
 @section('content')
     <section class="cart-banner position-relative text-center" >

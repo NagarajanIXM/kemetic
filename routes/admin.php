@@ -472,6 +472,20 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => ['web
             Route::get('/{id}/reply', 'ReviewsController@reply');
             Route::get('/{id}/delete', 'ReviewsController@delete');
         });
+        
+        Route::group(['prefix' => 'media'], function () {
+            Route::get('/', 'MediaController@index');
+            Route::get('/{id}/toggleStatus', 'MediaController@toggleStatus');
+            Route::get('/{id}/reply', 'MediaController@reply');
+            Route::delete('/{id}/delete', 'MediaController@delete');
+        });
+        
+        Route::group(['prefix' => 'media-tools'], function () {
+            Route::get('/', 'MediaToolController@index');
+            Route::get('/{id}/toggleStatus', 'MediaToolController@toggleStatus');
+            Route::post('/create-mediaTool', 'MediaToolController@createMediaTool');
+            Route::delete('/{id}/delete', 'MediaToolController@delete');
+        });
 
         Route::group(['prefix' => 'consultants'], function () {
             Route::get('/', 'ConsultantsController@index');

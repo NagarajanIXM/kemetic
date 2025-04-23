@@ -20062,3 +20062,51 @@ p {
 .line_height_unset{
   line-height: unset;
 }
+
+.pointer {
+  cursor: pointer;
+}
+
+.btn_facebook_share {
+  background-color: #1877F2;
+  color: white;
+}
+
+.btn_facebook_share:hover {
+  background-color: #0d65d9;
+  color: white;
+}
+
+.btn_twitter_share {
+  background-color: #1DA1F2;
+  color: white;
+}
+
+.btn_twitter_share:hover {
+  background-color: #0d8ae0;
+  color: white;
+}
+
+.btn_linkedin_share {
+  background-color: #0077b5;
+  color: white;
+}
+
+.btn_linkedin_share:hover {
+  background-color: #005f91;
+  color: white;
+}
+
+.btn_whatsapp_share {
+  background-color: #25D366;
+  color: white;
+}
+
+.btn_whatsapp_share:hover {
+  background-color: #1da851;
+  color: white;
+}
+
+.stats_icon {
+  color: #727272;
+}

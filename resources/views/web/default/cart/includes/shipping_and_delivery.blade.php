@@ -5,6 +5,55 @@
 
             @if(!empty(getStoreSettings('show_address_selection_in_cart')))
             <div class="col-12 col-lg-6">
+                <!--@php $name = explode(" ",$user->full_name); @endphp-->
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.first_name') }}</label>-->
+                <!--    <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" -->
+                <!--           value="{{ array_key_exists(0,$name) ? $name[0] : '' }}">-->
+                
+                <!--    @error('first_name')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+                
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.last_name') }}</label>-->
+                <!--    <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" -->
+                <!--           value="{{ array_key_exists(1,$name) ? $name[1] : '' }}">-->
+                
+                <!--    @error('last_name')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+                
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.email') }}</label>-->
+                <!--    <input type="text" name="email" class="form-control @error('email') is-invalid @enderror" -->
+                <!--           value="{{ !empty($user) ? $user->email : '' }}">-->
+                
+                <!--    @error('email')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+                
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">Phone</label>-->
+                <!--    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" -->
+                <!--           value="{{ !empty($user) ? $user->mobile : '' }}">-->
+                
+                <!--    @error('phone')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+                
                 <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.country') }}</label>
 
@@ -24,69 +73,109 @@
                     </div>
                     @enderror
                 </div>
-
+                
+                <!--<input type="hidden" name="province_id" value="0">-->
+                <!--<input type="hidden" name="city_id" value="0">-->
+                
                 <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.province') }}</label>
-
-                    <!-- <select name="province_id" class="form-control @error('province_id')  is-invalid @enderror" {{ (!empty($user) and $user->province_id) ? '' : 'disabled' }}> -->
-                    <select name="province_id" class="form-control" {{ (!empty($user) and $user->province_id) ? '' : 'disabled' }}>
-                        <option value="">{{ trans('update.select_province') }}</option>
-
-                        @if(!empty($provinces))
-                        @foreach($provinces as $province)
-                        <option value="{{ $province->id }}" {{ (!empty($user) and $user->province_id == $province->id) ? 'selected' : '' }}>{{ $province->title }}</option>
-                        @endforeach
-                        @endif
-                    </select>
-
-                    @error('province_id')
+                    <input type="text" name="province_name" class="form-control @error('province_name') is-invalid @enderror" 
+                           value="{{ !empty($user) ? $user->province_name : '' }}">
+                
+                    @error('province_name')
                     <div class="invalid-feedback">
                         {{ $message }}
                     </div>
                     @enderror
                 </div>
-
-                <div class="form-group">
-                    <label class="input-label font-weight-500">{{ trans('update.city') }}</label>
-
-                    <!-- <select name="city_id" class="form-control @error('city_id')  is-invalid @enderror" {{ (!empty($user) and $user->city_id) ? '' : 'disabled' }}> -->
-                    <select name="city_id" class="form-control" {{ (!empty($user) and $user->city_id) ? '' : 'disabled' }}>
-                        <option value="">{{ trans('update.select_city') }}</option>
-
-                        @if(!empty($cities))
-                        @foreach($cities as $city)
-                        <option value="{{ $city->id }}" {{ (!empty($user) and $user->city_id == $city->id) ? 'selected' : '' }}>{{ $city->title }}</option>
-                        @endforeach
-                        @endif
-                    </select>
-
-                    @error('city_id')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                    @enderror
-                </div>
-
+                
                 <div class="form-group d-none">
                     <label class="input-label font-weight-500">{{ trans('update.district') }}</label>
-
-                    <!-- <select name="district_id" class="form-control @error('district_id')  is-invalid @enderror" {{ (!empty($user) and $user->district_id) ? '' : 'disabled' }}> -->
-                    <select name="district_id" class="form-control" {{ (!empty($user) and $user->district_id) ? '' : 'disabled' }}>
-                        <option value="">{{ trans('update.select_district') }}</option>
-
-                        @if(!empty($districts))
-                        @foreach($districts as $district)
-                        <option value="{{ $district->id }}" {{ (!empty($user) and $user->district_id == $district->id) ? 'selected' : '' }}>{{ $district->title }}</option>
-                        @endforeach
-                        @endif
-                    </select>
-
-                    @error('district_id')
+                    <input type="text" name="district_name" class="form-control @error('district_name') is-invalid @enderror" 
+                           value="{{ !empty($user) ? $user->district_name : '' }}">
+                
+                    @error('district_name')
                     <div class="invalid-feedback">
                         {{ $message }}
                     </div>
                     @enderror
-                </div>
+                </div>    
+                
+                <div class="form-group">
+                    <label class="input-label font-weight-500">{{ trans('update.city') }}</label>
+                    <input type="text" name="city_name" class="form-control @error('city_name') is-invalid @enderror" 
+                           value="{{ !empty($user) ? $user->city_name : '' }}">
+                
+                    @error('city_name')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>      
+                  
+
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.province') }}</label>-->
+
+                    <!-- <select name="province_id" class="form-control @error('province_id')  is-invalid @enderror" {{ (!empty($user) and $user->province_id) ? '' : 'disabled' }}> -->
+                <!--    <select name="province_id" class="form-control" {{ (!empty($user) and $user->province_id) ? '' : 'disabled' }}>-->
+                <!--        <option value="">{{ trans('update.select_province') }}</option>-->
+
+                <!--        @if(!empty($provinces))-->
+                <!--        @foreach($provinces as $province)-->
+                <!--        <option value="{{ $province->id }}" {{ (!empty($user) and $user->province_id == $province->id) ? 'selected' : '' }}>{{ $province->title }}</option>-->
+                <!--        @endforeach-->
+                <!--        @endif-->
+                <!--    </select>-->
+
+                <!--    @error('province_id')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+
+                <!--<div class="form-group">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.city') }}</label>-->
+
+                    <!-- <select name="city_id" class="form-control @error('city_id')  is-invalid @enderror" {{ (!empty($user) and $user->city_id) ? '' : 'disabled' }}> -->
+                <!--    <select name="city_id" class="form-control" {{ (!empty($user) and $user->city_id) ? '' : 'disabled' }}>-->
+                <!--        <option value="">{{ trans('update.select_city') }}</option>-->
+
+                <!--        @if(!empty($cities))-->
+                <!--        @foreach($cities as $city)-->
+                <!--        <option value="{{ $city->id }}" {{ (!empty($user) and $user->city_id == $city->id) ? 'selected' : '' }}>{{ $city->title }}</option>-->
+                <!--        @endforeach-->
+                <!--        @endif-->
+                <!--    </select>-->
+
+                <!--    @error('city_id')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
+
+                <!--<div class="form-group d-none">-->
+                <!--    <label class="input-label font-weight-500">{{ trans('update.district') }}</label>-->
+
+                    <!-- <select name="district_id" class="form-control @error('district_id')  is-invalid @enderror" {{ (!empty($user) and $user->district_id) ? '' : 'disabled' }}> -->
+                <!--    <select name="district_id" class="form-control" {{ (!empty($user) and $user->district_id) ? '' : 'disabled' }}>-->
+                <!--        <option value="">{{ trans('update.select_district') }}</option>-->
+
+                <!--        @if(!empty($districts))-->
+                <!--        @foreach($districts as $district)-->
+                <!--        <option value="{{ $district->id }}" {{ (!empty($user) and $user->district_id == $district->id) ? 'selected' : '' }}>{{ $district->title }}</option>-->
+                <!--        @endforeach-->
+                <!--        @endif-->
+                <!--    </select>-->
+
+                <!--    @error('district_id')-->
+                <!--    <div class="invalid-feedback">-->
+                <!--        {{ $message }}-->
+                <!--    </div>-->
+                <!--    @enderror-->
+                <!--</div>-->
 
                 <!-- //aditya -->
                 <div class="form-group">

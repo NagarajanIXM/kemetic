@@ -42,55 +42,6 @@
                 </div>
 
                 <ul class="navbar-nav ml-auto d-flex align-items-center">
-                    <!-- @if(!empty($categories) and count($categories))
-                        <li class="mr-lg-25">
-                            <div class="menu-category">
-                                <ul>
-                                    <li class="cursor-pointer user-select-none d-flex xs-categories-toggle">
-                                        <i data-feather="grid" width="20" height="20" class="mr-10 d-none d-lg-block"></i>
-                                        {{ trans('categories.categories') }}
-
-                                        <ul class="cat-dropdown-menu">
-                                            @foreach($categories as $category)
-                                                <li>
-                                                    <a href="{{ $category->getUrl() }}" class="{{ (!empty($category->subCategories) and count($category->subCategories)) ? 'js-has-subcategory' : '' }}">
-                                                        <div class="d-flex align-items-center">
-                                                            @if(!empty($category->icon))
-                                                                <img src="{{ $category->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $category->title }} icon">
-                                                            @endif
-
-                                                            {{ $category->title }}
-                                                        </div>
-
-                                                        @if(!empty($category->subCategories) and count($category->subCategories))
-                                                            <i data-feather="chevron-right" width="20" height="20" class="d-none d-lg-inline-block ml-10"></i>
-                                                            <i data-feather="chevron-down" width="20" height="20" class="d-inline-block d-lg-none"></i>
-                                                        @endif
-                                                    </a>
-
-                                                    @if(!empty($category->subCategories) and count($category->subCategories))
-                                                        <ul class="sub-menu" data-simplebar @if((!empty($isRtl) and $isRtl)) data-simplebar-direction="rtl" @endif>
-                                                            @foreach($category->subCategories as $subCategory)
-                                                                <li>
-                                                                    <a href="{{ $subCategory->getUrl() }}">
-                                                                        @if(!empty($subCategory->icon))
-                                                                            <img src="{{ $subCategory->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $subCategory->title }} icon">
-                                                                        @endif
-
-                                                                        {{ $subCategory->title }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                        </ul>
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    @endif -->
 
                     @if(!empty($navbarPages) and count($navbarPages))
                         @foreach($navbarPages as $navbarPage)

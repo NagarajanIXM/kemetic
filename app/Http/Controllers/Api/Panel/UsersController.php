@@ -374,11 +374,11 @@ class UsersController extends Controller
     {
 
         $user = apiAuth();
-
-        if (!$user) {
-            abort(403);
-        }
-
+        
+        // if (!$user) {
+        //     abort(403);
+        // }
+        
         validateParam($request->all(), [
             'country_id' => 'required',
             'address' => 'required|max:255',
@@ -386,16 +386,26 @@ class UsersController extends Controller
             'zip_code' => 'required',
             'province_id' => 'required',
             'city_id' => 'required',
+            'create_account' => 'required'
         ]);
-
         $data = $request->all();
-        // print_r($data);die;
-
+            
         try {
 
-            $carts = Cart::where('creator_id', $user->id)
-            ->get();
-
+            $user_as_a_guest=false;
+            if(!$user){
+                $user = new \stdClass(); // Create an empty object for guest users
+                $user->id = $data['device_id'] ?? null;
+                $user_as_a_guest=true;
+                if (!$user->id) {
+                    return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+                }
+                $carts = Cart::where('creator_guest_id', $user->id)->get();
+            }
+            else{
+                $carts = Cart::where('creator_id', $user->id)->get();
+            }
+    
             foreach ($carts as $cart) {
                 if (!empty($cart->product_order_id)) {
                     ProductOrder::where('id', $cart->product_order_id)
@@ -405,16 +415,45 @@ class UsersController extends Controller
                         ]);
                 }
             }
-
-            $user->update([
-                'country_id' => $data['country_id'] ?? $user->country_id,
-                'province_id' => $data['province_id'] ?? $user->province_id,
-                'city_id' => $data['city_id'] ?? $user->city_id,
-                'district_id' => $user->district_id ?? null,
-                'zip_code' => $data['zip_code'] ?? $user->zip_code,
-                'house_no' => $data['house_no'] ?? $user->house_no,
-                'address' => $data['address'] ?? $user->address,
-            ]);
+            
+            if (!$user->id) {
+                
+                $name = $data['first_name']." ".$data['last_name'];
+                $createuser = User::create([
+                    'device_id_or_ip_address' => $data['device_id'],
+                    'country_id'    => $data['country_id'] ?? null,
+                    'province_name' => $data['province_id'] ?? null,
+                    'city_name'     => $data['city_id'] ?? null,
+                    'district_id'   => $data['district_id'] ?? null,
+                    'zip_code'      => $data['zip_code'] ?? null,
+                    'house_no'      => $data['house_no'] ?? null,
+                    'address'       => $data['address'] ?? null,
+                    'full_name'     => $name ?? null,
+                    'email'         => $data['email'] ?? null,
+                    'mobile'        => $data['phone'] ?? null,
+                ]);
+               
+                if($data['create_account']){
+                    Cart::where('creator_guest_id', $user->id)
+                    ->update([
+                        'creator_id' => $createuser->id,
+                    ]);
+                }
+                
+            }
+            else{
+                $name = $data['first_name']." ".$data['last_name'];
+                $user->update([
+                    'country_id' => $data['country_id'] ?? $user->country_id,
+                    'province_name' => $data['province_id'] ?? $user->province_name,
+                    'city_name' => $data['city_id'] ?? $user->city_name,
+                    'district_id' => $user->district_id ?? null,
+                    'zip_code' => $data['zip_code'] ?? $user->zip_code,
+                    'house_no' => $data['house_no'] ?? $user->house_no,
+                    'address' => $data['address'] ?? $user->address,
+                ]);
+            }
+            
             // panel.user_setting_success
 
             return apiResponse2(1, 'updated', trans('api.public.updated'));
@@ -422,6 +461,7 @@ class UsersController extends Controller
         } catch (\Exception $e) {
             return apiResponse2(0, 'error', 'Something went wrong');
         }
+        
 
     }
 

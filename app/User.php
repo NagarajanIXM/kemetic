@@ -910,6 +910,12 @@ class User extends Authenticatable
 
         return $address;
     }
+    
+    public function getAddressInvoice($full = false)
+    {
+        $region = Region::where('id', $this->country_id)->value('title'); // Corrected variable name
+        return trim("{$this->city_name}, {$this->province_name}, {$region}");
+    }
 
     public function getWaitingDeliveryProductOrdersCount()
     {

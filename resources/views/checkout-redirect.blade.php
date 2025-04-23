@@ -6,7 +6,7 @@
     <title>Redirecting to Checkout...</title>
 </head>
 <body>
-    <form id="checkout-form" action="/panel/financial/pay-subscribes?auto_redirect=1" method="POST">
+    <form id="checkout-form" action="/panel/financial/recurringPay-subscribes?auto_redirect=1" method="POST">
         @csrf
         <input type="hidden" name="amount" value="{{ $checkoutData['amount'] }}">
         <input type="hidden" name="id" value="{{ $checkoutData['id'] }}">

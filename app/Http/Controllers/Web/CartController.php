@@ -448,7 +448,7 @@ class CartController extends Controller
 
     public function checkout(Request $request, $carts = null)
     {
-        //die('cart');
+    //  echo "<pre>";print_r($request->all());die;
         $user = auth()->user();
 
         if (empty($carts)) {
@@ -555,9 +555,9 @@ class CartController extends Controller
 
         $user->update([
             'country_id' => $data['country_id'] ?? $user->country_id,
-            'province_id' => $data['province_id'] ?? $user->province_id,
-            'city_id' => $data['city_id'] ?? $user->city_id,
-            'district_id' => $data['district_id'] ?? $user->district_id,
+            'province_name' => $data['province_name'] ?? $user->province_name,
+            'city_name' => $data['city_name'] ?? $user->city_name,
+            'district_name' => $data['district_name'] ?? $user->district_name,
             'zip_code' => $data['zip_code'] ?? $user->zip_code,
             'house_no' => $data['house_no'] ?? $user->house_no,
             'address' => $data['address'] ?? $user->address,

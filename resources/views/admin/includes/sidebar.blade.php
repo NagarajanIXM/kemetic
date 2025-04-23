@@ -318,6 +318,22 @@
                     </a>
                 </li>
             @endcan
+            @can('admin_reviews_lists')
+                <li class="{{ (request()->is(getAdminPanelUrl('/media', false))) ? 'active' : '' }}">
+                    <a href="{{ getAdminPanelUrl() }}/media" class="nav-link @if(!empty($sidebarBeeps['media']) and $sidebarBeeps['media']) beep beep-sidebar @endif">
+                        <i class="fas fa-film"></i>
+                        <span>{{ trans('admin/main.media_kits') }}</span>
+                    </a>
+                </li>
+            @endcan
+            @can('admin_reviews_lists')
+                <li class="{{ (request()->is(getAdminPanelUrl('/media-tools', false))) ? 'active' : '' }}">
+                    <a href="{{ getAdminPanelUrl() }}/media-tools" class="nav-link @if(!empty($sidebarBeeps['media-tool']) and $sidebarBeeps['media-tool']) beep beep-sidebar @endif">
+                        <i class="fas fa-tools"></i>
+                        <span>{{ trans('admin/main.media_tools') }}</span>
+                    </a>
+                </li>
+            @endcan
 
 
 

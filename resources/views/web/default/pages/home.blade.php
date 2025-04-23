@@ -104,9 +104,7 @@
 
 
 <div class=" position-relative subscribes-container pe-none user-select-none mb-50" id="memberShip">
-    <!-- <div id="parallax4" class="ltr d-none d-md-block">
-        <div data-depth="0.2" class="gradient-box left-gradient-box"></div>
-    </div> -->
+   
     <div class="member-bg"></div>
 
     <section class="container home-sections home-sections-swiper membership-div">
@@ -179,7 +177,7 @@
                             </div>
                             <div class="card-footer p-0 bg-transparent border-0">
                                 @if(auth()->check())
-                                <form action="/panel/financial/pay-subscribes?auto_redirect=1" method="post" class="w-100">
+                                <form action="/panel/financial/recurringPay-subscribes?auto_redirect=1" method="post" class="w-100">
                                     {{ csrf_field() }}
                                     <input name="amount" value="{{ $subscribe->price }}" type="hidden">
                                     <input name="id" value="{{ $subscribe->id }}" type="hidden">
@@ -209,19 +207,12 @@
         </div>
     </section>
 
-    <!-- <div id="parallax5" class="ltr d-none d-md-block">
-        <div data-depth="0.4" class="gradient-box right-gradient-box"></div>
-    </div>
-
-    <div id="parallax6" class="ltr d-none d-md-block">
-        <div data-depth="0.6" class="gradient-box bottom-gradient-box"></div>
-    </div> -->
+    
 </div>
 
 
 
-{{-- Statistics --}}
-<!-- @include('web.default.pages.includes.home_statistics') -->
+
 
 @foreach($homeSections as $homeSection)
 
@@ -243,9 +234,7 @@
                             <div class="mask"></div>
                             <div class="p-5 p-md-25 feature-slider-card">
                                 <div class="d-flex flex-column feature-slider-body position-relative h-100">
-                                    <!-- @if($feature->webinar->bestTicket() < $feature->webinar->price)
-                                        <span class="badge badge-danger mb-2 ">{{ trans('public.offer',['off' => $feature->webinar->bestTicket(true)['percent']]) }}</span>
-                                        @endif -->
+                                    
                                     <a href="{{ $feature->webinar->getUrl() }}">
                                         <h3 class="card-title mt-1">{{ $feature->webinar->title }}</h3>
                                     </a>
@@ -339,35 +328,7 @@
 </section>
 @endif
 
-{{-- Upcoming Course --}}
- {{--@if($homeSection->name == \App\Models\HomeSection::$upcoming_courses and !empty($upcomingCourses) and !$upcomingCourses->isEmpty())
-<section class="home-sections home-sections-swiper container">
-    <div class="d-flex justify-content-between ">
-        <div>
-            <h2 class="section-title">{{ trans('update.upcoming_courses') }}</h2>
-            <p class="section-hint">{{ trans('update.upcoming_courses_home_section_hint') }}</p>
-        </div>
 
-        <a href="/upcoming_courses?sort=newest" class="btn btn-border-white">{{ trans('home.view_all') }}</a>
-    </div>
-
-    <div class="mt-10 position-relative">
-        <div class="swiper-container upcoming-courses-swiper px-12">
-            <div class="swiper-wrapper py-20">
-                @foreach($upcomingCourses as $upcomingCourse)
-                <div class="swiper-slide">
-                    @include('web.default.includes.webinar.upcoming_course_grid_card',['upcomingCourse' => $upcomingCourse])
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-center">
-            <div class="swiper-pagination upcoming-courses-swiper-pagination"></div>
-        </div>
-    </div>
-</section>
-@endif --}}
 
 @if($homeSection->name == \App\Models\HomeSection::$latest_classes and !empty($latestWebinars) and !$latestWebinars->isEmpty())
 <section class="home-sections home-sections-swiper container">
@@ -381,7 +342,6 @@
             <h5 class="mb-2">{{ trans('home.latest_webinars_hint4') }}</h5>
         </div>
 
-        <!-- <a href="/classes?sort=newest" class="btn btn-border-white">{{ trans('home.view_all') }}</a> -->
     </div>
 
     <div class="mt-30 position-relative">
@@ -435,144 +395,7 @@
 </section>
 @endif
 
-{{-- @if($homeSection->name == \App\Models\HomeSection::$trend_categories and !empty($trendCategories) and !$trendCategories->isEmpty())
-<section class="home-sections home-sections-swiper container">
-    <h2 class="section-title">{{ trans('home.trending_categories') }}</h2>
-    <p class="section-hint">{{ trans('home.trending_categories_hint') }}</p>
 
-
-    <div class="swiper-container trend-categories-swiper px-12 mt-40">
-        <div class="swiper-wrapper py-20">
-            @foreach($trendCategories as $trend)
-            <div class="swiper-slide">
-                <a href="{{ $trend->category->getUrl() }}">
-                    <div class="trending-card d-flex flex-column align-items-center w-100">
-                        <div class="trending-image d-flex align-items-center justify-content-center w-100" style="background-color: {{ $trend->color }}">
-                            <div class="icon mb-3">
-                                <img src="{{ $trend->getIcon() }}" width="10" class="img-cover" alt="{{ $trend->category->title }}">
-                            </div>
-                        </div>
-
-                        <div class="item-count px-10 px-lg-20 py-5 py-lg-10">{{ $trend->category->webinars_count }} {{ trans('product.course') }}</div>
-
-                        <h3>{{ $trend->category->title }}</h3>
-                    </div>
-                </a>
-            </div>
-            @endforeach
-        </div>
-    </div>
-
-    <div class="d-flex justify-content-center">
-        <div class="swiper-pagination trend-categories-swiper-pagination"></div>
-    </div>
-</section>
-@endif --}}
-
-{{-- Ads Bannaer --}}
-<!-- @if($homeSection->name == \App\Models\HomeSection::$full_advertising_banner and !empty($advertisingBanners1) and count($advertisingBanners1))
-<div class="home-sections container">
-    <div class="row">
-        @foreach($advertisingBanners1 as $banner1)
-        <div class="col-{{ $banner1->size }}">
-            <a href="{{ $banner1->link }}">
-                <img src="{{ $banner1->image }}" class="img-cover rounded-sm" alt="{{ $banner1->title }}">
-            </a>
-        </div>
-        @endforeach
-    </div>
-</div>
-@endif -->
-{{-- ./ Ads Bannaer --}}
-
-<!-- @if($homeSection->name == \App\Models\HomeSection::$best_sellers and !empty($bestSaleWebinars) and !$bestSaleWebinars->isEmpty())
-<section class="home-sections container">
-    <div class="d-flex justify-content-between">
-        <div>
-            <h2 class="section-title">{{ trans('home.best_sellers') }}</h2>
-            <p class="section-hint">{{ trans('home.best_sellers_hint') }}</p>
-        </div>
-
-        <a href="/classes?sort=bestsellers" class="btn btn-border-white">{{ trans('home.view_all') }}</a>
-    </div>
-
-    <div class="mt-10 position-relative">
-        <div class="swiper-container best-sales-webinars-swiper px-12">
-            <div class="swiper-wrapper py-20">
-                @foreach($bestSaleWebinars as $bestSaleWebinar)
-                <div class="swiper-slide">
-                    @include('web.default.includes.webinar.grid-card',['webinar' => $bestSaleWebinar])
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-center">
-            <div class="swiper-pagination best-sales-webinars-swiper-pagination"></div>
-        </div>
-    </div>
-</section>
-@endif -->
-
-<!-- @if($homeSection->name == \App\Models\HomeSection::$discount_classes and !empty($hasDiscountWebinars) and !$hasDiscountWebinars->isEmpty())
-<section class="home-sections container">
-    <div class="d-flex justify-content-between">
-        <div>
-            <h2 class="section-title">{{ trans('home.discount_classes') }}</h2>
-            <p class="section-hint">{{ trans('home.discount_classes_hint') }}</p>
-        </div>
-
-        <a href="/classes?discount=on" class="btn btn-border-white">{{ trans('home.view_all') }}</a>
-    </div>
-
-    <div class="mt-10 position-relative">
-        <div class="swiper-container has-discount-webinars-swiper px-12">
-            <div class="swiper-wrapper py-20">
-                @foreach($hasDiscountWebinars as $hasDiscountWebinar)
-                <div class="swiper-slide">
-                    @include('web.default.includes.webinar.grid-card',['webinar' => $hasDiscountWebinar])
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-center">
-            <div class="swiper-pagination has-discount-webinars-swiper-pagination"></div>
-        </div>
-    </div>
-</section>
-@endif -->
-
-<!-- @if($homeSection->name == \App\Models\HomeSection::$free_classes and !empty($freeWebinars) and !$freeWebinars->isEmpty())
-<section class="home-sections home-sections-swiper container">
-    <div class="d-flex justify-content-between">
-        <div>
-            <h2 class="section-title">{{ trans('home.free_classes') }}</h2>
-            <p class="section-hint">{{ trans('home.free_classes_hint') }}</p>
-        </div>
-
-        <a href="/classes?free=on" class="btn btn-border-white">{{ trans('home.view_all') }}</a>
-    </div>
-
-    <div class="mt-10 position-relative">
-        <div class="swiper-container free-webinars-swiper px-12">
-            <div class="swiper-wrapper py-20">
-
-                @foreach($freeWebinars as $freeWebinar)
-                <div class="swiper-slide">
-                    @include('web.default.includes.webinar.grid-card',['webinar' => $freeWebinar])
-                </div>
-                @endforeach
-
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-center">
-            <div class="swiper-pagination free-webinars-swiper-pagination"></div>
-        </div>
-    </div>
-</section>
-@endif -->
 
 
 
@@ -665,87 +488,7 @@
 
 
 
-<!-- @if($homeSection->name == \App\Models\HomeSection::$find_instructors and !empty($findInstructorSection))
-<section class="home-sections home-sections-swiper container find-instructor-section position-relative">
-    <div class="row align-items-center">
-        <div class="col-12 col-lg-6">
-            <div class="">
-                <h2 class="font-36 font-weight-bold text-dark">{{ $findInstructorSection['title'] ?? '' }}</h2>
-                <p class="font-16 font-weight-normal text-gray mt-10">{{ $findInstructorSection['description'] ?? '' }}</p>
 
-                <div class="mt-35 d-flex align-items-center">
-                    @if(!empty($findInstructorSection['button1']) and !empty($findInstructorSection['button1']['title']) and !empty($findInstructorSection['button1']['link']))
-                    <a href="{{ $findInstructorSection['button1']['link'] }}" class="btn btn-primary mr-15">{{ $findInstructorSection['button1']['title'] }}</a>
-                    @endif
-
-                    @if(!empty($findInstructorSection['button2']) and !empty($findInstructorSection['button2']['title']) and !empty($findInstructorSection['button2']['link']))
-                    <a href="{{ $findInstructorSection['button2']['link'] }}" class="btn btn-outline-primary">{{ $findInstructorSection['button2']['title'] }}</a>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-6 mt-20 mt-lg-0">
-            <div class="position-relative ">
-                <img src="{{ $findInstructorSection['image'] }}" class="find-instructor-section-hero" alt="{{ $findInstructorSection['title'] }}">
-                <img src="{{ asset('/assets/default/img/home/circle-4.png')}}" class="find-instructor-section-circle" alt="circle">
-                <img src="{{ asset('/assets/default/img/home/dot.png')}}" class="find-instructor-section-dots" alt="dots">
-
-                <div class="example-instructor-card bg-white rounded-sm shadow-lg  p-5 p-md-15 d-flex align-items-center">
-                    <div class="example-instructor-card-avatar">
-                        <img src="{{ asset('/assets/default/img/home/toutor_finder.svg')}}" class="img-cover rounded-circle" alt="user name">
-                    </div>
-
-                    <div class="flex-grow-1 ml-15">
-                        <span class="font-14 font-weight-bold text-secondary d-block">{{ trans('update.looking_for_an_instructor') }}</span>
-                        <span class="text-gray font-12 font-weight-500">{{ trans('update.find_the_best_instructor_now') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif -->
-
-<!-- @if($homeSection->name == \App\Models\HomeSection::$reward_program and !empty($rewardProgramSection))
-<section class="home-sections home-sections-swiper container reward-program-section position-relative">
-    <div class="row align-items-center">
-        <div class="col-12 col-lg-6">
-            <div class="position-relative reward-program-section-hero-card">
-                <img src="{{ $rewardProgramSection['image'] }}" class="reward-program-section-hero" alt="{{ $rewardProgramSection['title'] }}">
-
-                <div class="example-reward-card bg-white rounded-sm shadow-lg p-5 p-md-15 d-flex align-items-center">
-                    <div class="example-reward-card-medal">
-                        <img src="{{ asset('/assets/default/img/rewards/medal.png')}}" class="img-cover rounded-circle" alt="medal">
-                    </div>
-
-                    <div class="flex-grow-1 ml-15">
-                        <span class="font-14 font-weight-bold text-secondary d-block">{{ trans('update.you_got_50_points') }}</span>
-                        <span class="text-gray font-12 font-weight-500">{{ trans('update.for_completing_the_course') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-6 mt-20 mt-lg-0">
-            <div class="">
-                <h2 class="font-36 font-weight-bold text-dark">{{ $rewardProgramSection['title'] ?? '' }}</h2>
-                <p class="font-16 font-weight-normal text-gray mt-10">{{ $rewardProgramSection['description'] ?? '' }}</p>
-
-                <div class="mt-35 d-flex align-items-center">
-                    @if(!empty($rewardProgramSection['button1']) and !empty($rewardProgramSection['button1']['title']) and !empty($rewardProgramSection['button1']['link']))
-                    <a href="{{ $rewardProgramSection['button1']['link'] }}" class="btn btn-primary mr-15">{{ $rewardProgramSection['button1']['title'] }}</a>
-                    @endif
-
-                    @if(!empty($rewardProgramSection['button2']) and !empty($rewardProgramSection['button2']['title']) and !empty($rewardProgramSection['button2']['link']))
-                    <a href="{{ $rewardProgramSection['button2']['link'] }}" class="btn btn-outline-primary">{{ $rewardProgramSection['button2']['title'] }}</a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif -->
 
 @if($homeSection->name == \App\Models\HomeSection::$become_instructor and !empty($becomeInstructorSection))
 <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
@@ -778,16 +521,7 @@
                 <img src="{{ asset('/assets/default/img/home/circle-4.png')}}" class="find-instructor-section-circle" alt="circle">
                 <img src="{{ asset('/assets/default/img/home/dot.png')}}" class="find-instructor-section-dots" alt="dots">
 
-                <!-- <div class="example-instructor-card bg-white rounded-sm shadow-lg border p-5 p-md-15 d-flex align-items-center">
-                    <div class="example-instructor-card-avatar">
-                        <img src="{{ asset('/assets/default/img/home/become_instructor.svg')}}" class="img-cover rounded-circle" alt="user name">
-                    </div>
-
-                    <div class="flex-grow-1 ml-15">
-                        <span class="font-14 font-weight-bold text-secondary d-block">{{ trans('update.become_an_instructor') }}</span>
-                        <span class="text-gray font-12 font-weight-500">{{ trans('update.become_instructor_tagline') }}</span>
-                    </div>
-                </div> -->
+                
             </div>
         </div>
     </div>
@@ -825,92 +559,7 @@
 </section>
 @endif
 
-<!-- @if($homeSection->name == \App\Models\HomeSection::$video_or_image_section and !empty($boxVideoOrImage))
-<section class="home-sections home-sections-swiper position-relative">
-    <div class="home-video-mask"></div>
-    <div class="container home-video-container d-flex flex-column align-items-center justify-content-center position-relative" style="background-image: url('{{ $boxVideoOrImage['background'] ?? '' }}')">
-        <a href="{{ $boxVideoOrImage['link'] ?? '' }}" class="home-video-play-button d-flex align-items-center justify-content-center position-relative">
-            <i data-feather="play" width="36" height="36" class=""></i>
-        </a>
 
-        <div class="mt-50 pt-10 text-center">
-            <h2 class="home-video-title">{{ $boxVideoOrImage['title'] ?? '' }}</h2>
-            <p class="home-video-hint mt-10">{{ $boxVideoOrImage['description'] ?? '' }}</p>
-        </div>
-    </div>
-</section>
-@endif -->
-
-<!-- @if($homeSection->name == \App\Models\HomeSection::$instructors and !empty($instructors) and !$instructors->isEmpty())
-<section class="home-sections container">
-    <div class="d-flex justify-content-between">
-        <div>
-            <h2 class="section-title">{{ trans('home.instructors') }}</h2>
-            <p class="section-hint">{{ trans('home.instructors_hint') }}</p>
-        </div>
-
-        <a href="/instructors" class="btn btn-border-white">{{ trans('home.all_instructors') }}</a>
-    </div>
-
-    <div class="position-relative mt-20 ltr">
-        <div class="owl-carousel customers-testimonials instructors-swiper-container">
-
-            @foreach($instructors as $instructor)
-            <div class="item">
-                <div class="shadow-effect">
-                    <div class="instructors-card d-flex flex-column align-items-center justify-content-center">
-                        <div class="instructors-card-avatar">
-                            <img src="{{ $instructor->getAvatar(108) }}" alt="{{ $instructor->full_name }}" class="rounded-circle img-cover">
-                        </div>
-                        <div class="instructors-card-info mt-10 text-center">
-                            <a href="{{ $instructor->getProfileUrl() }}" target="_blank">
-                                <h3 class="font-16 font-weight-bold text-dark-blue">{{ $instructor->full_name }}</h3>
-                            </a>
-
-                            <p class="font-14 text-gray mt-5">{{ $instructor->bio }}</p>
-                            <div class="stars-card d-flex align-items-center justify-content-center mt-10">
-                                @php
-                                $i = 5;
-                                @endphp
-                                @while(--$i >= 5 - $instructor->rates())
-                                <i data-feather="star" width="20" height="20" class="active"></i>
-                                @endwhile
-                                @while($i-- >= 0)
-                                <i data-feather="star" width="20" height="20" class=""></i>
-                                @endwhile
-                            </div>
-
-                            @if(!empty($instructor->hasMeeting()))
-                            <a href="{{ $instructor->getProfileUrl() }}?tab=appointments" class="btn btn-primary btn-sm rounded-pill mt-15">{{ trans('home.reserve_a_live_class') }}</a>
-                            @else
-                            <a href="{{ $instructor->getProfileUrl() }}" class="btn btn-primary btn-sm rounded-pill mt-15">{{ trans('public.profile') }}</a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-
-        </div>
-    </div>
-</section>
-@endif -->
-
-{{-- Ads Bannaer --}}
-<!-- @if($homeSection->name == \App\Models\HomeSection::$half_advertising_banner and !empty($advertisingBanners2) and count($advertisingBanners2))
-<div class="home-sections container">
-    <div class="row">
-        @foreach($advertisingBanners2 as $banner2)
-        <div class="col-{{ $banner2->size }}">
-            <a href="{{ $banner2->link }}">
-                <img src="{{ $banner2->image }}" class="img-cover rounded-sm" alt="{{ $banner2->title }}">
-            </a>
-        </div>
-        @endforeach
-    </div>
-</div>
-@endif -->
-{{-- ./ Ads Bannaer --}}
 
  @if($homeSection->name == \App\Models\HomeSection::$organizations and !empty($organizations) and !$organizations->isEmpty())
 <section class="home-sections home-sections-swiper container">

@@ -2681,3 +2681,19 @@ function customSortArrayNumAndTextIndex($array) {
 
     return array_merge($numericKeys, $textualKeys);
 }
+
+if (!function_exists('getSystemIP')) {
+    function getSystemIP()
+    {
+        $ip = '';
+
+        // Check if running on a local network
+        if (PHP_OS_FAMILY === 'Windows') {
+            $ip = getHostByName(getHostName());
+        } else {
+            $ip = trim(shell_exec("hostname -I | awk '{print $1}'"));
+        }
+
+        return $ip ?: ($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
+    }
+}

@@ -1509,5 +1509,11 @@ By enabling this feature, newly registered users will require approval using thi
 'teacher' => 'Instructor',
 'discount_amount' => 'Discount Amount',
 'discount_title' => 'Discount Title',
-
+'media_kits' => 'Media Kits',
+'total_media_kit' => 'Total Media kit',
+'published_media_kit' => 'Published Media kit',
+'course_link' => 'Course Link',
+'video' => 'Video',
+'admin_media_kit' => 'Admin Media kit',
+'media_tools' => 'Media Tools',
 ];

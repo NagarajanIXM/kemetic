@@ -23,17 +23,36 @@ use Illuminate\Support\Facades\URL;
 
 class CartController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = apiAuth();
-        $carts = Cart::where('creator_id', $user->id)
+        if(!$user){
+            $user = new \stdClass(); // Create an empty object for guest users
+            $user->id = $request->input('device_id') ?? null;
+            $user_as_a_guest=true;
+            if (!$user->id) {
+                return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+            }
+            $carts = Cart::where('creator_guest_id', $user->id)
             ->with([
                 'productOrder' => function ($query) {
                     $query->whereHas('product');
                 }
             ])
             ->get();
-        $cartt = new \stdClass();
+       
+        }
+        else{
+            $carts = Cart::where('creator_id', $user->id)
+            ->with([
+                'productOrder' => function ($query) {
+                    $query->whereHas('product');
+                }
+            ])
+            ->get();
+            
+        }
+         $cartt = new \stdClass();
 
         if (!empty($carts) and !$carts->isEmpty()) {
             $calculate = $this->calculatePrice($carts, $user);
@@ -58,7 +77,7 @@ class CartController extends Controller
             }
 
             if (!empty($calculate)) {
-
+                
                 $cartt = [
                     /*    'items' => $carts->map(function ($cart) {
                             return $cart->details;
@@ -66,7 +85,8 @@ class CartController extends Controller
                     'items' => CartResource::collection($carts),
                     'amounts' => $calculate,
                     'totalCashbackAmount' => $totalCashbackAmount,
-                    'user_group' => $user->userGroup ? $user->userGroup->group : null,
+                    // 'user_group' => $user->userGroup ? $user->userGroup->group : null,
+                    'user_group' => null,
                 ];
             }
         }

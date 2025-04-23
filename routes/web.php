@@ -259,6 +259,8 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     });
 
     Route::get('/classes', 'ClassesController@index');
+    Route::post('/update-stats', 'ClassesController@updateStats')->name('update-stats');
+    Route::get('/get-stats', 'ClassesController@getStats')->name('get-stats');
 
     Route::get('/reward-courses', 'RewardCoursesController@index');
 
@@ -420,6 +422,9 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     Route::get('/brand-ambassador', 'HomeController@brand_ambassador');
     Route::get('/landing-page', 'HomeController@landing_page');
     Route::get('/test-subscription', 'HomeController@test_subscription');
+    Route::get('/media-kit', 'HomeController@media_kit')->name('media-kit');
+    Route::get('/upload-media', 'HomeController@upload_media');
+    Route::post('/create-media', 'HomeController@create_media');
 
 });
 

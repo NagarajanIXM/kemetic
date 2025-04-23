@@ -2048,15 +2048,14 @@ function sendNotification($template, $options, $user_id = null, $group_id = null
                 'type' => $type,
                 'created_at' => time()
             ]);
-
             if (env('APP_ENV') == 'production') {
                 $user = \App\User::where('id', $user_id)->first();
-
+                
                 if (!empty($user) and !empty($user->email)) {
                     try {
-                        \Mail::to($user->email)->send(new \App\Mail\SendNotifications(['title' => $title, 'message' => $message]));
+                       // \Mail::to($user->email)->send(new \App\Mail\SendNotifications(['title' => $title, 'message' => $message]));
                     } catch (Exception $exception) {
-                        // dd($exception)
+                         dd($exception);
                     }
                 }
 

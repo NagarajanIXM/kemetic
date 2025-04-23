@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\Objects\UserObj;
 use App\Models\Api\UserFirebaseSessions;
 use App\Models\Category;
 use App\Models\Newsletter;
-
+use Carbon\Carbon;
 use App\Models\Reward;
 use App\Models\RewardAccounting;
 use App\Models\UserMeta;
@@ -374,7 +374,7 @@ class UsersController extends Controller
     {
 
         $user = apiAuth();
-        
+
         // if (!$user) {
         //     abort(403);
         // }
@@ -391,57 +391,68 @@ class UsersController extends Controller
         $data = $request->all();
             
         try {
-
+        
             $user_as_a_guest=false;
             if(!$user){
-                $user = new \stdClass(); // Create an empty object for guest users
-                $user->id = $data['device_id'] ?? null;
+                $guestuser = new \stdClass(); // Create an empty object for guest users
+                $guestuser->id = $data['device_id'] ?? null;
                 $user_as_a_guest=true;
-                if (!$user->id) {
+                if (!$guestuser->id) {
                     return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
                 }
-                $carts = Cart::where('creator_guest_id', $user->id)->get();
+                $carts = Cart::where('creator_guest_id', $guestuser->id)->get();
+                $userid = $guestuser->id;
             }
             else{
                 $carts = Cart::where('creator_id', $user->id)->get();
+                $userid = $user->id;
             }
-    
+           
+            
             foreach ($carts as $cart) {
                 if (!empty($cart->product_order_id)) {
                     ProductOrder::where('id', $cart->product_order_id)
-                        ->where('buyer_id', $user->id)
+                        ->where('buyer_id', $userid)
                         ->update([
                             'message_to_seller' => $data['description'],
                         ]);
                 }
             }
-            
-            if (!$user->id) {
+
+            if (!$user) {
                 
-                $name = $data['first_name']." ".$data['last_name'];
-                $createuser = User::create([
-                    'device_id_or_ip_address' => $data['device_id'],
-                    'country_id'    => $data['country_id'] ?? null,
-                    'province_name' => $data['province_id'] ?? null,
-                    'city_name'     => $data['city_id'] ?? null,
-                    'district_id'   => $data['district_id'] ?? null,
-                    'zip_code'      => $data['zip_code'] ?? null,
-                    'house_no'      => $data['house_no'] ?? null,
-                    'address'       => $data['address'] ?? null,
-                    'full_name'     => $name ?? null,
-                    'email'         => $data['email'] ?? null,
-                    'mobile'        => $data['phone'] ?? null,
-                ]);
-               
                 if($data['create_account']){
-                    Cart::where('creator_guest_id', $user->id)
-                    ->update([
-                        'creator_id' => $createuser->id,
+                    
+                    $name = $data['first_name']." ".$data['last_name'];
+                    $createuser = User::create([
+                        'device_id_or_ip_address' => $data['device_id'],
+                        'country_id'    => $data['country_id'] ?? null,
+                        'province_name' => $data['province_id'] ?? null,
+                        'city_name'     => $data['city_id'] ?? null,
+                        'zip_code'      => $data['zip_code'] ?? null,
+                        'house_no'      => $data['house_no'] ?? null,
+                        'address'       => $data['address'] ?? null,
+                        'full_name'     => $name ?? null,
+                        'email'         => $data['email'] ?? null,
+                        'mobile'        => $data['mobile'] ?? null,
+                        'role_id'       => 1,
+                        'role_name'     => 'user',
+                        'created_at'    => Carbon::now()->timestamp,
+                        'updated_at'    => Carbon::now()->timestamp
                     ]);
+                    
+                    if($createuser->id){
+                        if($data['create_account']){
+                            Cart::where('creator_guest_id', $userid)
+                            ->update([
+                                'creator_id' => $createuser->id,
+                            ]);
+                        }
+                    }
                 }
-                
             }
             else{
+
                 $name = $data['first_name']." ".$data['last_name'];
                 $user->update([
                     'country_id' => $data['country_id'] ?? $user->country_id,
@@ -451,6 +462,10 @@ class UsersController extends Controller
                     'zip_code' => $data['zip_code'] ?? $user->zip_code,
                     'house_no' => $data['house_no'] ?? $user->house_no,
                     'address' => $data['address'] ?? $user->address,
+                    'full_name'     => $name ?? null,
+                    'email'         => $data['email'] ?? null,
+                    'mobile'        => $data['mobile'] ?? null,
+                    'updated_at'    => Carbon::now()->timestamp
                 ]);
             }
             

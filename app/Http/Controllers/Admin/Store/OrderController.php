@@ -77,28 +77,37 @@ class OrderController extends Controller
     private function returnDataToView(Request $request, $query, $inHouseOrders = false)
     {
         $successOrders = $this->handleTopStats(deepClone($query), ProductOrder::$success);
-
+      
         $canceledOrders = $this->handleTopStats(deepClone($query), ProductOrder::$canceled);
 
         $waitingOrders = $this->handleTopStats(deepClone($query), ProductOrder::$waitingDelivery);
-
+  
         $totalOrders = $this->handleTopStats(deepClone($query));
 
         $query = $this->getFilters($query, $request);
-
+        // $orders = $query->with([
+        //     'product',
+        //     'seller' => function ($query) {
+        //         $query->select('id', 'full_name');
+        //     },
+        //     'buyer' => function ($query) {
+        //         $query->select('id', 'full_name');
+        //     },
+        //     'sale',
+        // ])
+        //     ->orderBy('created_at', 'desc')
+        //     ->paginate(10);
+        
         $orders = $query->with([
             'product',
             'seller' => function ($query) {
-                $query->select('id', 'full_name');
-            },
-            'buyer' => function ($query) {
                 $query->select('id', 'full_name');
             },
             'sale',
         ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
+        
         $data = [
             'pageTitle' => trans('update.orders_lists'),
             'orders' => $orders,
@@ -108,7 +117,7 @@ class OrderController extends Controller
             'totalOrders' => $totalOrders,
             'inHouseOrders' => $inHouseOrders
         ];
-
+        
         $sellerIds = $request->get('seller_ids', []);
         $customerIds = $request->get('customer_ids', []);
 

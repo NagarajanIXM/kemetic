@@ -450,8 +450,22 @@ class CartController extends Controller
     public function checkout(Request $request)
     {
         $user = apiAuth();
-        $carts = Cart::where('creator_id', $user->id)
+        $user_as_a_guest=false;
+        if($user){
+            $carts = Cart::where('creator_id', $user->id)
             ->get();
+        }
+        else{
+            $user = new \stdClass(); // Create an empty object for guest users
+            $user->id = $request->input('device_id') ?? null;
+            $user_as_a_guest=true;
+            if (!$user->id) {
+                return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+            }
+            
+            $carts = Cart::where('creator_guest_id', $user->id)
+            ->get();
+        }
 
         $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
         $checkAddressValidation = (count($hasPhysicalProduct) > 0);
@@ -496,7 +510,12 @@ class CartController extends Controller
                 }
 
                 $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
-
+                $usergrp = null;
+                $usercharge = 0;
+                if(!$user_as_a_guest){
+                    $usergrp = $user->userGroup ? $user->userGroup->group : null;
+                    $usercharge = $user->getAccountingCharge();
+                }
                 $data = [
                     'pageTitle' => trans('public.checkout_page_title'),
                     'paymentChannels' => $paymentChannels,
@@ -506,10 +525,10 @@ class CartController extends Controller
                     'tax' => $calculate["tax"],
                     'taxPrice' => $calculate["tax_price"],
                     'total' => $calculate["total"],
-                    'userGroup' => $user->userGroup ? $user->userGroup->group : null,
+                    'userGroup' => $usergrp,
                     'order' => $order,
                     'count' => $carts->count(),
-                    'userCharge' => $user->getAccountingCharge(),
+                    'userCharge' => $usercharge,
                     'razorpay' => $razorpay,
                     'totalCashbackAmount' => $totalCashbackAmount,
                     'previousUrl' => url()->previous(),

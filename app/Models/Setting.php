@@ -156,7 +156,6 @@ class Setting extends Model implements TranslatableContract
         if (!empty($key) and (empty($value) or count($value) < 1)) {
             return '';
         }
-
         return $value;
     }
 

@@ -56,7 +56,7 @@ class Channel extends BasePaymentChannel implements IChannel
         Stripe::setApiKey($this->api_secret);
 
         $successUrl = (session()->get('mobileHeader') == 1)
-            ? 'https://kemetic.app/paymentSuccess'
+            ? 'https://kemetic.app/demo/public/paymentSuccess'
             : $this->makeCallbackUrl('success');
 
         $checkoutData = [
@@ -213,18 +213,22 @@ class Channel extends BasePaymentChannel implements IChannel
         session()->forget($this->order_session_key);
 
         $user = auth()->user() ?? apiAuth();
-
+        if(!$user){
+            $userid = $request->device_id;
+        }else{
+            $userid = $user->id;
+        }
         $order = Order::where('id', $order_id)
-            ->where('user_id', $user->id)
+            ->where('user_id', $userid)
             ->first();
 
-        // echo "<pre>";print_r($order);
-        // die();
+    //      echo "<pre>";print_r($order);
+    //  die();
         if ($status == 'success' and !empty($request->session_id) and !empty($order)) {
             Stripe::setApiKey($this->api_secret);
 
             $session = Session::retrieve($request->session_id);
-
+            Log::info('session id : ', [$session]);
             if (!empty($session) and $session->payment_status == 'paid') {
                 $order->update([
                     'status' => Order::$paying
@@ -254,9 +258,13 @@ class Channel extends BasePaymentChannel implements IChannel
         session()->forget($this->order_session_key);
 
         $user = auth()->user() ?? apiAuth();
-
+        if(!$user){
+            $userid = $request->device_id;
+        }else{
+            $userid = $user->id;
+        }
         $order = Order::where('id', $order_id)
-            ->where('user_id', $user->id)
+            ->where('user_id', $userid)
             ->first();
 
         // echo "<pre>";print_r($order);

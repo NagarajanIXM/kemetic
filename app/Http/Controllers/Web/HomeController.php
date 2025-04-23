@@ -224,7 +224,7 @@ class HomeController extends Controller
         return response()->json(['message' => 'Request logged successfully']);
     }
     public function index()
-    {
+    { 
         $homeSections = HomeSection::orderBy('order', 'asc')->get();
         $selectedSectionsName = $homeSections->pluck('name')->toArray();
 

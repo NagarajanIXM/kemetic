@@ -210,14 +210,25 @@
                                             <td>{{ $order->id }}</td>
 
                                             <td class="text-left">
-                                                @if(!empty($order->buyer))
-                                                    {{ $order->buyer->full_name  }}
-                                                    <div class="text-primary text-small font-600-bold">ID : {{  $order->buyer->id }}</div>
+                                                
+                                                <!--@if(!empty($order->buyer))-->
+                                                <!--    {{ $order->buyer->full_name  }}-->
+                                                <!--    <div class="text-primary text-small font-600-bold">ID : {{  $order->buyer->id }}</div>-->
+                                                <!--@elseif(!empty($order->gift) and !empty($order->gift))-->
+                                                <!--    {{ $order->gift->user->full_name }}-->
+                                                <!--    <div class="text-primary text-small font-600-bold">ID : {{  $order->gift->user_id }}</div>-->
+                                                <!--    <span class="d-block mt-1 text-muted font-12">{!! trans('update.a_gift_for_name_on_date',['name' => $order->gift->name, 'date' => (!empty($order->gift->date) ? dateTimeFormat($order->gift->date, 'j M Y H:i') : trans('update.instantly'))]) !!}</span>-->
+                                                <!--@endif-->
+                                                
+                                                @if(!empty($order->buyer_info?->full_name))
+                                                    {{ $order->buyer_info?->full_name;  }}
+                                                    <div class="text-primary text-small font-600-bold">ID : {{ $order->buyer_info?->id }}</div>
                                                 @elseif(!empty($order->gift) and !empty($order->gift))
                                                     {{ $order->gift->user->full_name }}
                                                     <div class="text-primary text-small font-600-bold">ID : {{  $order->gift->user_id }}</div>
                                                     <span class="d-block mt-1 text-muted font-12">{!! trans('update.a_gift_for_name_on_date',['name' => $order->gift->name, 'date' => (!empty($order->gift->date) ? dateTimeFormat($order->gift->date, 'j M Y H:i') : trans('update.instantly'))]) !!}</span>
                                                 @endif
+                                                
                                             </td>
 
                                             <td class="text-left">

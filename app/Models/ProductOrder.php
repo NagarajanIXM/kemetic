@@ -41,4 +41,11 @@ class ProductOrder extends Model
     {
         return $this->belongsTo('App\Models\Gift', 'gift_id', 'id');
     }
+    
+    public function getBuyerInfoAttribute()
+    {
+        return \App\User::where('id', $this->buyer_id)
+            ->orWhere('device_id_or_ip_address', $this->buyer_id)
+            ->first();
+    }
 }

@@ -109,7 +109,9 @@ class User extends Model implements JWTSubject
             'province_id' => $this->province_id,
             'city_id' => $this->city_id,
             'district_id' => $this->district_id,
-
+            'province_name' => $this->province_name,
+            'city_name' => $this->city_name,
+            'zip_code' => $this->zip_code,
             /*  'country' => [
                   'id' => $this->country_id,
                   'title' => Region::find($this->country_id)->title??null,

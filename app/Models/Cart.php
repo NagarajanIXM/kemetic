@@ -68,6 +68,11 @@ class Cart extends Model
     {
         Cart::where('creator_id', $userId)->delete();
     }
+    
+    public static function emptyWithoutLoginCart($userId)
+    {
+        Cart::where('creator_guest_id', $userId)->delete();
+    }
 
     public static function getCartsTotalPrice($carts)
     {

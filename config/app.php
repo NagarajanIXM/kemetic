@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', null),
+    'url' => env('APP_URL', 'https://kemetic.app/demo/'),
 
     'asset_url' => env('ASSET_URL', null),
 

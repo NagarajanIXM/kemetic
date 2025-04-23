@@ -125,7 +125,7 @@ class Sale extends Model
         if (!empty($orderItem->gift_id)) {
             $orderType = Order::$gift;
         }
-
+    
         $seller_id = OrderItem::getSeller($orderItem);
 
         $sale = Sale::create([
@@ -172,6 +172,7 @@ class Sale extends Model
 
     private static function handleSaleNotifications($orderItem, $seller_id)
     {
+        
         $title = '';
         if (!empty($orderItem->webinar_id)) {
             $title = $orderItem->webinar->title;
@@ -190,26 +191,33 @@ class Sale extends Model
         } else if (!empty($orderItem->installment_payment_id)) {
             $title = ($orderItem->installmentPayment->type == 'upfront') ? trans('update.installment_upfront') : trans('update.installment');
         }
-
+       
         if (!empty($orderItem->gift_id) and !empty($orderItem->gift)) {
             $title .= ' (' . trans('update.a_gift_for_name_on_date_without_bold', ['name' => $orderItem->gift->name, 'date' => dateTimeFormat($orderItem->gift->date, 'j M Y H:i')]) . ')';
         }
-
+        if(!is_numeric($orderItem->user_id)){
+            $fullname = $orderItem->full_name;
+        }
+        else{
+            $fullname = $orderItem->user->full_name;
+        }
+        
         if ($orderItem->reserve_meeting_id) {
             $reserveMeeting = $orderItem->reserveMeeting;
-
+            
             $notifyOptions = [
                 '[amount]' => handlePrice($orderItem->amount),
-                '[u.name]' => $orderItem->user->full_name,
+                '[u.name]' => $fullname,
                 '[time.date]' => $reserveMeeting->day . ' ' . $reserveMeeting->time,
             ];
             sendNotification('new_appointment', $notifyOptions, $orderItem->user_id);
             sendNotification('new_appointment', $notifyOptions, $reserveMeeting->meeting->creator_id);
         } elseif (!empty($orderItem->product_id)) {
+           
             $notifyOptions = [
                 '[p.title]' => $title,
                 '[amount]' => handlePrice($orderItem->total_amount),
-                '[u.name]' => $orderItem->user->full_name,
+                '[u.name]' => $fullname,
             ];
 
             sendNotification('product_new_sale', $notifyOptions, $seller_id);

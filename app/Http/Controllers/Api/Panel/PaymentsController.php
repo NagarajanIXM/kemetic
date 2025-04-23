@@ -82,13 +82,26 @@ class PaymentsController extends Controller
     public function paymentRequest(Request $request)
     {
         $user = apiAuth();
+        $user_as_a_guest=false;
+        if(!$user){
+            $guestuser = new \stdClass(); // Create an empty object for guest users
+            $guestuser->id = $request->input('device_id') ?? null;
+            $user_as_a_guest=true;
+            if (!$guestuser->id) {
+                return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+            }
+            $userid = $guestuser->id;
+        }
+        else{
+            $userid = $user->id;
+        }
         validateParam($request->all(), [
             'gateway_id' => ['required',
                 Rule::exists('payment_channels', 'id')
             ],
             'order_id' => ['required',
                 Rule::exists('orders', 'id')->where('status', Order::$pending)
-                    ->where('user_id', $user->id),
+                    ->where('user_id', $userid),
 
             ],
         ]);
@@ -98,7 +111,7 @@ class PaymentsController extends Controller
         $orderId = $request->input('order_id');
 
         $order = Order::where('id', $orderId)
-            ->where('user_id', $user->id)
+            ->where('user_id', $userid)
             ->first();
 
         session()->put($this->order_session_key, $orderId);
@@ -155,24 +168,28 @@ class PaymentsController extends Controller
 
         try {
             $channelManager = ChannelManager::makeChannel($paymentChannel);
+            // print_r($channelManager);
             // die('ghjgh');
             $order = $channelManager->verify($request);
             // Log::info('channelManager: ', [$order]);
             return $this->paymentOrderAfterVerify($order);
 
         } catch (\Exception $exception) {
+        
             // $toastData = [
             //     'title' => trans('cart.fail_purchase'),
             //     'msg' => trans('cart.gateway_error'),
             //     'status' => 'error'
             // ];
             // return redirect('cart')->with(['toast' => $toastData]);
+            
             return apiResponse2(0, 'gateway_error', trans('api.payment.gateway_error'));
         }
     }
 
     private function paymentOrderAfterVerify($order)
     {
+        
         if (!empty($order)) {
             // Log::info('paymentOrderAfterVerify: ', [$order]);
             if ($order->status == Order::$paying) {
@@ -200,6 +217,7 @@ class PaymentsController extends Controller
             // return redirect('/payments/status');
             return apiResponse2(1, 'success', 'Payment Successful');
         } else {
+            
             // $toastData = [
             //     'title' => trans('cart.fail_purchase'),
             //     'msg' => trans('cart.gateway_error'),
@@ -227,15 +245,23 @@ class PaymentsController extends Controller
     public function setPaymentAccounting($order, $type = null)
     {
         $cashbackAccounting = new CashbackAccounting();
-
+        
         if ($order->is_charge_account) {
             Accounting::charge($order);
-
             $cashbackAccounting->rechargeWallet($order);
         } else {
+            
+            
             foreach ($order->orderItems as $orderItem) {
+                
+                
+                if(!is_numeric($order->user_id)){
+                    $guestname = User::where('device_id_or_ip_address', $order->user_id)->first();
+                    $orderItem->full_name = $guestname->full_name;
+                }
+                
                 $sale = Sale::createSales($orderItem, $order->payment_method);
-
+                
                 if (!empty($orderItem->reserve_meeting_id)) {
                     $reserveMeeting = ReserveMeeting::where('id', $orderItem->reserve_meeting_id)->first();
                     $reserveMeeting->update([
@@ -278,28 +304,35 @@ class PaymentsController extends Controller
 
                     $this->updateInstallmentOrder($orderItem, $sale);
                 } else {
+                    
                     // webinar and meeting and product and bundle
 
                     Accounting::createAccounting($orderItem, $type);
                     TicketUser::useTicket($orderItem);
-
+                    
                     if (!empty($orderItem->product_id)) {
                         $this->updateProductOrder($sale, $orderItem);
                     }
                 }
+                
             }
-
+            
             // Set Cashback Accounting For All Order Items
             $cashbackAccounting->setAccountingForOrderItems($order->orderItems);
         }
-
-        Cart::emptyCart($order->user_id);
+        if(!is_numeric($order->user_id)){
+            Cart::emptyWithoutLoginCart($order->user_id);
+        }
+        else{
+            Cart::emptyCart($order->user_id);
+        }
+        
     }
 
     private function updateProductOrder($sale, $orderItem)
     {
         $product = $orderItem->product;
-
+       
         $status = ProductOrder::$waitingDelivery;
 
         if ($product and $product->isVirtual()) {

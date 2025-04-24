@@ -56,7 +56,7 @@ class Channel extends BasePaymentChannel implements IChannel
         Stripe::setApiKey($this->api_secret);
 
         $successUrl = (session()->get('mobileHeader') == 1)
-            ? 'https://kemetic.app/demo/public/paymentSuccess'
+            ? 'https://kemetic.app/paymentSuccess'
             : $this->makeCallbackUrl('success');
 
         $checkoutData = [

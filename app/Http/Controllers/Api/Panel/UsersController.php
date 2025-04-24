@@ -421,7 +421,7 @@ class UsersController extends Controller
 
             if (!$user) {
                 
-                if($data['create_account']){
+                
                     
                     $name = $data['first_name']." ".$data['last_name'];
                     $createuser = User::create([
@@ -441,6 +441,7 @@ class UsersController extends Controller
                         'updated_at'    => Carbon::now()->timestamp
                     ]);
                     
+                if($data['create_account']){    
                     if($createuser->id){
                         if($data['create_account']){
                             Cart::where('creator_guest_id', $userid)

@@ -2053,9 +2053,9 @@ function sendNotification($template, $options, $user_id = null, $group_id = null
                 
                 if (!empty($user) and !empty($user->email)) {
                     try {
-                       // \Mail::to($user->email)->send(new \App\Mail\SendNotifications(['title' => $title, 'message' => $message]));
+                        \Mail::to($user->email)->send(new \App\Mail\SendNotifications(['title' => $title, 'message' => $message]));
                     } catch (Exception $exception) {
-                         dd($exception);
+                        // dd($exception);
                     }
                 }
 

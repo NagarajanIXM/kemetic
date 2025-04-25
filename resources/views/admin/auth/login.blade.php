@@ -12,7 +12,7 @@
 
         <p class="text-muted">{{ trans('auth.admin_tagline') }}</p>
 
-        <form method="POST" action="/demo/public{{ getAdminPanelUrl() }}/login" class="needs-validation" novalidate="">
+        <form method="POST" action="{{ getAdminPanelUrl() }}/login" class="needs-validation" novalidate="">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="email">{{ trans('auth.email') }}</label>

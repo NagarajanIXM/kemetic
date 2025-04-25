@@ -25,7 +25,7 @@
                 <div class="login-card">
                     <h1 class="font-20 font-weight-bold">{{ trans('auth.login_h1') }}</h1>
 
-                    <form method="Post" action="/demo/public/login" class="mt-35">
+                    <form method="Post" action="/login" class="mt-35">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
                         @include('web.default.auth.includes.register_methods')

@@ -84,7 +84,7 @@
                 @endif
 
                 <li class="navbar-auth-user-dropdown-item">
-                    <a href="/demo/public/logout" class="d-flex align-items-center w-100 px-15 py-10 text-danger font-14 bg-transparent">
+                    <a href="/logout" class="d-flex align-items-center w-100 px-15 py-10 text-danger font-14 bg-transparent">
                         <img src="/assets/default/img/icons/user_menu/logout.svg" class="icons">
                         <span class="ml-5">{{ trans('auth.logout') }}</span>
                     </a>
@@ -96,7 +96,7 @@
     </div>
 @else
     <div class="d-flex align-items-center ml-md-50">
-        <a href="/demo/public/login" class="py-5 px-10 mr-10 text-dark-blue font-14">{{ trans('auth.login') }}</a>
-        <a href="/demo/public/register" class="py-5 px-10 text-dark-blue font-14">{{ trans('auth.register') }}</a>
+        <a href="/login" class="py-5 px-10 mr-10 text-dark-blue font-14">{{ trans('auth.login') }}</a>
+        <a href="/register" class="py-5 px-10 text-dark-blue font-14">{{ trans('auth.register') }}</a>
     </div>
 @endif

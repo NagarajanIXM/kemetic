@@ -475,6 +475,10 @@ class UsersController extends Controller
             return apiResponse2(1, 'updated', trans('api.public.updated'));
 
         } catch (\Exception $e) {
+            if ($e->getCode() == 23000) {
+                // Duplicate entry error
+                return apiResponse2(0,'error','The email address or mobile no is already in use.');
+            } 
             return apiResponse2(0, 'error', 'Something went wrong');
         }
         

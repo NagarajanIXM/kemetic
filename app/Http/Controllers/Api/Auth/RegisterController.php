@@ -75,7 +75,7 @@ class RegisterController extends Controller
     
         if ($userCase) {
             // Update password and generate token
-            $userCase->update(['password' => Hash::make($data['password'])]);
+            //$userCase->update(['password' => Hash::make($data['password'])]);
             $token = auth('api')->tokenById($userCase->id);
     
             // Store or update Firebase session
@@ -100,12 +100,14 @@ class RegisterController extends Controller
                 if ($userCase->full_name) {
                     return apiResponse2(0, 'already_registered', trans('api.auth.already_registered'));
                 } else {
+                    $userCase->update(['password' => Hash::make($data['password'])]);
                     return apiResponse2(0, 'go_step_3', trans('api.auth.go_step_3'), [
                         'user_id' => $userCase->id,
                         'token' => $token,
                     ]);
                 }
             } else {
+                $userCase->update(['password' => Hash::make($data['password'])]);
                 return apiResponse2(0, 'go_step_2', trans('api.auth.go_step_2'), [
                     'user_id' => $userCase->id,
                     'token' => $token,

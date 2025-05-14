@@ -198,10 +198,10 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
         });
 
         Route::group(['prefix' => 'cart'], function () {
-            Route::get('/', 'CartController@index');
+            // Route::get('/', 'CartController@index');
 
             Route::post('/coupon/validate', 'CartController@couponValidate');
-            Route::post('/checkout', 'CartController@checkout')->name('checkout');
+            //Route::post('/checkout', 'CartController@checkout')->name('checkout');
         });
 
         Route::group(['prefix' => 'users'], function () {
@@ -219,6 +219,11 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
 
     });
 
+    Route::group(['prefix' => 'cart'], function () {
+            Route::get('/', 'CartController@index');
+            Route::post('/checkout', 'CartController@checkout')->name('checkout');
+    });
+            
     Route::group(['prefix' => 'meetings'], function () {
         Route::post('/reserve', 'MeetingController@reserve');
     });

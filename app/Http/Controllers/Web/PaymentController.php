@@ -452,12 +452,27 @@ class PaymentController extends Controller
         ]);
 
         $user = auth()->user();
+        $user_as_a_guest=false;
+        if(!$user){
+            if (session()->has('device_id')) {
+                $guestuser = new \stdClass(); // Create an empty object for guest users
+                $guestuser->id = session('device_id');
+                $user_as_a_guest=true;
+                $userid = $guestuser->id;
+            }
+            else{
+                return redirect('/cart');
+            }
+        }
+        else{
+            $userid = $user->id;
+        }
         
         $gateway = $request->input('gateway');
         $orderId = $request->input('order_id');
        
         $order = Order::where('id', $orderId)
-            ->where('user_id', $user->id)
+            ->where('user_id', $userid)
             ->first();
 
         if ($order->type === Order::$meeting) {

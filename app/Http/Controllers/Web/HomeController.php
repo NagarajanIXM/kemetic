@@ -579,7 +579,7 @@ class HomeController extends Controller
             'becomeInstructorSection' => $becomeInstructorSection ?? null,
             'forumSection' => $forumSection ?? null,
         ];
-
+        
         return view(getTemplate() . '.pages.home', $data);
     }
 

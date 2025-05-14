@@ -40,10 +40,26 @@ class Share
 
                 view()->share('unReadNotifications', $unReadNotifications);
             }
+            
+            $cartManagerController = new CartManagerController();
+            $carts = $cartManagerController->getCarts();
+        }
+        else{
+            $deviceId = session('device_id');
+    
+            // Mimic a user object
+            //$user = new \stdClass();
+            //$user->id = $deviceId;
+            $carts = Cart::where('creator_guest_id', $deviceId)
+                ->with([
+                    'productOrder' => function ($query) {
+                        $query->whereHas('product')->with('product');
+                    }
+                ])
+                ->get();
         }
 
-        $cartManagerController = new CartManagerController();
-        $carts = $cartManagerController->getCarts();
+
         $totalCartsPrice = Cart::getCartsTotalPrice($carts);
 
         view()->share('userCarts', $carts);

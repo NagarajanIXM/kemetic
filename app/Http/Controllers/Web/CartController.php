@@ -15,98 +15,199 @@ use App\Models\Product;
 use App\Models\ProductOrder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\User;
+use Carbon\Carbon;
 
 class CartController extends Controller
 {
     use RegionsDataByUser;
 
-    public function index()
+    // public function index()
+    // {
+    //     $user = auth()->user();
+    //     $carts = Cart::where('creator_id', $user->id)
+    //         ->with([
+    //             'user',
+    //             'webinar',
+    //             'installmentPayment',
+    //             'reserveMeeting' => function ($query) {
+    //                 $query->with([
+    //                     'meeting',
+    //                     'meetingTime'
+    //                 ]);
+    //             },
+    //             'ticket',
+    //             'productOrder' => function ($query) {
+    //                 $query->whereHas('product');
+    //                 $query->with(['product']);
+    //             }
+    //         ])
+    //         ->get();
+
+    //     if (!empty($carts) and !$carts->isEmpty()) {
+    //         $calculate = $this->calculatePrice($carts, $user);
+
+    //         $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
+
+    //         $deliveryEstimateTime = 0;
+
+    //         if (!empty($hasPhysicalProduct) and count($hasPhysicalProduct)) {
+    //             foreach ($hasPhysicalProduct as $physicalProductCart) {
+    //                 if (!empty($physicalProductCart->productOrder) and
+    //                     !empty($physicalProductCart->productOrder->product) and
+    //                     !empty($physicalProductCart->productOrder->product->delivery_estimated_time) and
+    //                     $physicalProductCart->productOrder->product->delivery_estimated_time > $deliveryEstimateTime
+    //                 ) {
+    //                     $deliveryEstimateTime = $physicalProductCart->productOrder->product->delivery_estimated_time;
+    //                 }
+    //             }
+    //         }
+
+    //         if (!empty($calculate)) {
+
+    //             $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
+
+    //             $cartDiscount = CartDiscount::query()
+    //                 ->where('show_only_on_empty_cart', false)
+    //                 ->where('enable', true)
+    //                 ->first();
+
+
+    //             $data = [
+    //                 'pageTitle' => trans('public.cart_page_title'),
+    //                 'user' => $user,
+    //                 'carts' => $carts,
+    //                 'subTotal' => $calculate["sub_total"],
+    //                 'totalDiscount' => $calculate["total_discount"],
+    //                 'tax' => $calculate["tax"],
+    //                 'taxPrice' => $calculate["tax_price"],
+    //                 'total' => $calculate["total"],
+    //                 'productDeliveryFee' => $calculate["product_delivery_fee"],
+    //                 'taxIsDifferent' => $calculate["tax_is_different"],
+    //                 'userGroup' => !empty($user->userGroup) ? $user->userGroup->group : null,
+    //                 'hasPhysicalProduct' => (count($hasPhysicalProduct) > 0),
+    //                 'deliveryEstimateTime' => $deliveryEstimateTime,
+    //                 'totalCashbackAmount' => $totalCashbackAmount,
+    //                 'cartDiscount' => $cartDiscount,
+    //             ];
+
+    //             $data = array_merge($data, $this->getLocationsData($user));
+
+    //             return view('web.default.cart.cart', $data);
+    //         }
+    //     } else {
+    //         $cartDiscount = CartDiscount::query()->where('enable', true)->first();
+
+    //         if (!empty($cartDiscount)) {
+    //             $data = [
+    //                 'pageTitle' => trans('update.cart_is_empty'),
+    //                 'cartDiscount' => $cartDiscount,
+    //             ];
+
+    //             return view('web.default.cart.empty_cart', $data);
+    //         }
+    //     }
+
+    //     return redirect('/');
+    // }
+    
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $carts = Cart::where('creator_id', $user->id)
-            ->with([
-                'user',
-                'webinar',
-                'installmentPayment',
-                'reserveMeeting' => function ($query) {
-                    $query->with([
-                        'meeting',
-                        'meetingTime'
-                    ]);
-                },
-                'ticket',
-                'productOrder' => function ($query) {
-                    $query->whereHas('product');
-                    $query->with(['product']);
-                }
-            ])
-            ->get();
-
-        if (!empty($carts) and !$carts->isEmpty()) {
-            $calculate = $this->calculatePrice($carts, $user);
-
-            $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
-
-            $deliveryEstimateTime = 0;
-
-            if (!empty($hasPhysicalProduct) and count($hasPhysicalProduct)) {
-                foreach ($hasPhysicalProduct as $physicalProductCart) {
-                    if (!empty($physicalProductCart->productOrder) and
-                        !empty($physicalProductCart->productOrder->product) and
-                        !empty($physicalProductCart->productOrder->product->delivery_estimated_time) and
-                        $physicalProductCart->productOrder->product->delivery_estimated_time > $deliveryEstimateTime
-                    ) {
-                        $deliveryEstimateTime = $physicalProductCart->productOrder->product->delivery_estimated_time;
+        $isGuest = false;
+        
+        if (!$user) {
+            
+            $isGuest = true;
+    
+            // Get or create device_id from session
+            $deviceId = session('device_id');
+            if (!$deviceId) {
+                $deviceId = 'guest_' . uniqid();
+                session(['device_id' => $deviceId]);
+            }
+    
+            // Mimic a user object
+            $user = new \stdClass();
+            $user->id = $deviceId;
+            $carts = Cart::where('creator_guest_id', $deviceId)
+                ->with([
+                    'productOrder' => function ($query) {
+                        $query->whereHas('product')->with('product');
                     }
-                }
-            }
-
-            if (!empty($calculate)) {
-
-                $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
-
-                $cartDiscount = CartDiscount::query()
-                    ->where('show_only_on_empty_cart', false)
-                    ->where('enable', true)
-                    ->first();
-
-
-                $data = [
-                    'pageTitle' => trans('public.cart_page_title'),
-                    'user' => $user,
-                    'carts' => $carts,
-                    'subTotal' => $calculate["sub_total"],
-                    'totalDiscount' => $calculate["total_discount"],
-                    'tax' => $calculate["tax"],
-                    'taxPrice' => $calculate["tax_price"],
-                    'total' => $calculate["total"],
-                    'productDeliveryFee' => $calculate["product_delivery_fee"],
-                    'taxIsDifferent' => $calculate["tax_is_different"],
-                    'userGroup' => !empty($user->userGroup) ? $user->userGroup->group : null,
-                    'hasPhysicalProduct' => (count($hasPhysicalProduct) > 0),
-                    'deliveryEstimateTime' => $deliveryEstimateTime,
-                    'totalCashbackAmount' => $totalCashbackAmount,
-                    'cartDiscount' => $cartDiscount,
-                ];
-
-                $data = array_merge($data, $this->getLocationsData($user));
-
-                return view('web.default.cart.cart', $data);
-            }
+                ])
+                ->get();
         } else {
-            $cartDiscount = CartDiscount::query()->where('enable', true)->first();
-
-            if (!empty($cartDiscount)) {
-                $data = [
-                    'pageTitle' => trans('update.cart_is_empty'),
-                    'cartDiscount' => $cartDiscount,
-                ];
-
-                return view('web.default.cart.empty_cart', $data);
-            }
+           
+            $carts = Cart::where('creator_id', $user->id)
+                ->with([
+                    'user',
+                    'webinar',
+                    'installmentPayment',
+                    'reserveMeeting' => function ($query) {
+                        $query->with(['meeting', 'meetingTime']);
+                    },
+                    'ticket',
+                    'productOrder' => function ($query) {
+                        $query->whereHas('product')->with('product');
+                    }
+                ])
+                ->get();
         }
-
-        return redirect('/');
+    
+       // echo "<pre>"; print_r($carts); die;
+        if ($carts->isNotEmpty()) {
+            $calculate = $this->calculatePrice($carts, $user);
+    
+            // Only consider carts that have a valid productOrder + product
+            $hasPhysicalProduct = $carts->filter(function ($item) {
+                return isset($item->productOrder->product) &&
+                       $item->productOrder->product->type == Product::$physical;
+            });
+    
+            $deliveryEstimateTime = $hasPhysicalProduct->max(function ($item) {
+                return $item->productOrder->product->delivery_estimated_time ?? 0;
+            });
+            
+            $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
+    
+            $cartDiscount = CartDiscount::query()
+                ->where('show_only_on_empty_cart', false)
+                ->where('enable', true)
+                ->first();
+    
+            $data = [
+                'pageTitle' => trans('public.cart_page_title'),
+                'user' => $isGuest ? null : $user,
+                'carts' => $carts,
+                'subTotal' => $calculate["sub_total"],
+                'totalDiscount' => $calculate["total_discount"],
+                'tax' => $calculate["tax"],
+                'taxPrice' => $calculate["tax_price"],
+                'total' => $calculate["total"],
+                'productDeliveryFee' => $calculate["product_delivery_fee"],
+                'taxIsDifferent' => $calculate["tax_is_different"],
+                'userGroup' => (!$isGuest && isset($user->userGroup)) ? $user->userGroup->group : null,
+                'hasPhysicalProduct' => $hasPhysicalProduct->isNotEmpty(),
+                'deliveryEstimateTime' => $deliveryEstimateTime,
+                'totalCashbackAmount' => $totalCashbackAmount,
+                'cartDiscount' => $cartDiscount,
+            ];
+    
+            if (!$isGuest) {
+                $data = array_merge($data, $this->getLocationsData($user));
+            }
+    
+            return view('web.default.cart.cart', $data);
+        }
+    
+        // Empty cart view
+        $cartDiscount = CartDiscount::query()->where('enable', true)->first();
+        
+        return view('web.default.cart.empty_cart', [
+            'pageTitle' => trans('update.cart_is_empty'),
+            'cartDiscount' => $cartDiscount,
+        ]);
     }
 
     public function couponValidate(Request $request)
@@ -448,12 +549,27 @@ class CartController extends Controller
 
     public function checkout(Request $request, $carts = null)
     {
-    //  echo "<pre>";print_r($request->all());die;
         $user = auth()->user();
-
+        $user_as_a_guest=false;
         if (empty($carts)) {
-            $carts = Cart::where('creator_id', $user->id)
+            if($user){
+                $carts = Cart::where('creator_id', $user->id)
                 ->get();
+            }
+            else{
+                
+                if (session()->has('device_id')) {
+                    $user = new \stdClass(); // Create an empty object for guest users
+                    $user->id = session('device_id');
+                    $user_as_a_guest=true;
+                    $carts = Cart::where('creator_guest_id', $user->id)
+                    ->get();
+                }
+                else{
+                    return redirect('/cart');
+                }
+                
+            }
         }
       
         $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
@@ -463,16 +579,37 @@ class CartController extends Controller
         if (empty(getStoreSettings('show_address_selection_in_cart')) or !empty(getStoreSettings('take_address_selection_optional'))) {
             $checkAddressValidation = false;
         }
+        
+        if(!$user_as_a_guest){
+            
+            $this->validate($request, [
+                'country_id' => Rule::requiredIf($checkAddressValidation),
+                // 'province_id' => Rule::requiredIf($checkAddressValidation),
+                // 'city_id' => Rule::requiredIf($checkAddressValidation),
+                // 'district_id' => Rule::requiredIf($checkAddressValidation),
+                'address' => Rule::requiredIf($checkAddressValidation),
+                'house_no' => Rule::requiredIf($checkAddressValidation),
+                'zip_code' => Rule::requiredIf($checkAddressValidation),
+            ]);
+        }
+        else{
+           
+            $rules = [
+                'first_name'   => ['required', 'string', 'max:100'],
+                'last_name'    => ['required', 'string', 'max:100'],
+                'email'        => ['required', 'email', 'max:255'],
+                'phone'        => ['required', 'string', 'max:20'],
+                'country_id'   => ['required', 'integer'],
+                'province_name'=> ['required', 'string', 'max:100'],
+                'city_name'    => ['required', 'string', 'max:100'],
+                'address'      => ['required', 'string', 'max:255'],
+                'house_no'     => ['required', 'string', 'max:50'],
+                'zip_code'     => ['required', 'string', 'max:20'],
+            ];
+            $this->validate($request, $rules);
+        }
 
-        $this->validate($request, [
-            'country_id' => Rule::requiredIf($checkAddressValidation),
-            // 'province_id' => Rule::requiredIf($checkAddressValidation),
-            // 'city_id' => Rule::requiredIf($checkAddressValidation),
-            // 'district_id' => Rule::requiredIf($checkAddressValidation),
-            'address' => Rule::requiredIf($checkAddressValidation),
-            'house_no' => Rule::requiredIf($checkAddressValidation),
-            'zip_code' => Rule::requiredIf($checkAddressValidation),
-        ]);
+        
 
        
         $discountId = $request->input('discount_id');
@@ -497,7 +634,7 @@ class CartController extends Controller
             }
 
             if (count($hasPhysicalProduct) > 0) {
-                $this->updateProductOrders($request, $carts, $user);
+                $this->updateProductOrders($request, $carts, $user,$user_as_a_guest);
             }
 
             if (!empty($order) and $order->total_amount > 0) {
@@ -511,7 +648,12 @@ class CartController extends Controller
                 }
 
                 $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
-
+                $usergrp = null;
+                $usercharge = 0;
+                if(!$user_as_a_guest){
+                    $usergrp = $user->userGroup ? $user->userGroup->group : null;
+                    $usercharge = $user->getAccountingCharge();
+                }
                 $data = [
                     'pageTitle' => trans('public.checkout_page_title'),
                     'paymentChannels' => $paymentChannels,
@@ -521,15 +663,14 @@ class CartController extends Controller
                     'tax' => $calculate["tax"],
                     'taxPrice' => $calculate["tax_price"],
                     'total' => $calculate["total"],
-                    'userGroup' => $user->userGroup ? $user->userGroup->group : null,
+                    'userGroup' => $usergrp,
                     'order' => $order,
                     'count' => $carts->count(),
-                    'userCharge' => $user->getAccountingCharge(),
+                    'userCharge' => $usercharge,
                     'razorpay' => $razorpay,
                     'totalCashbackAmount' => $totalCashbackAmount,
                     'previousUrl' => url()->previous(),
                 ];
-
                 return view(getTemplate() . '.cart.payment', $data);
             } else {
                 return $this->handlePaymentOrderWithZeroTotalAmount($order);
@@ -539,7 +680,7 @@ class CartController extends Controller
         return redirect('/cart');
     }
 
-    private function updateProductOrders(Request $request, $carts, $user)
+    private function updateProductOrders(Request $request, $carts, $user,$user_as_a_guest)
     {
         $data = $request->all();
 
@@ -553,15 +694,47 @@ class CartController extends Controller
             }
         }
 
-        $user->update([
-            'country_id' => $data['country_id'] ?? $user->country_id,
-            'province_name' => $data['province_name'] ?? $user->province_name,
-            'city_name' => $data['city_name'] ?? $user->city_name,
-            'district_name' => $data['district_name'] ?? $user->district_name,
-            'zip_code' => $data['zip_code'] ?? $user->zip_code,
-            'house_no' => $data['house_no'] ?? $user->house_no,
-            'address' => $data['address'] ?? $user->address,
-        ]);
+        if(!$user_as_a_guest){
+            $user->update([
+                'country_id' => $data['country_id'] ?? $user->country_id,
+                'province_name' => $data['province_name'] ?? $user->province_name,
+                'city_name' => $data['city_name'] ?? $user->city_name,
+                'district_name' => $data['district_name'] ?? $user->district_name,
+                'zip_code' => $data['zip_code'] ?? $user->zip_code,
+                'house_no' => $data['house_no'] ?? $user->house_no,
+                'address' => $data['address'] ?? $user->address,
+            ]);
+        }
+        else{
+            $name = $data['first_name']." ".$data['last_name'];
+            $createuser = User::create([
+                'device_id_or_ip_address' => session('device_id'),
+                'country_id'    => $data['country_id'] ?? null,
+                'province_name' => $data['province_id'] ?? null,
+                'city_name'     => $data['city_id'] ?? null,
+                'zip_code'      => $data['zip_code'] ?? null,
+                'house_no'      => $data['house_no'] ?? null,
+                'address'       => $data['address'] ?? null,
+                'full_name'     => $name ?? null,
+                'email'         => $data['email'] ?? null,
+                'mobile'        => $data['mobile'] ?? null,
+                'role_id'       => 1,
+                'role_name'     => 'user',
+                'created_at'    => Carbon::now()->timestamp,
+                'updated_at'    => Carbon::now()->timestamp
+            ]);
+            if($data['create_account']){    
+                if($createuser->id){
+                    if($data['create_account']){
+                        Cart::where('creator_guest_id', $user->id)
+                        ->update([
+                            'creator_id' => $createuser->id,
+                        ]);
+                    }
+                }
+            }
+                
+        }
     }
 
     public function createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon = null)

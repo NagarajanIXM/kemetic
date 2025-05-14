@@ -27,9 +27,11 @@ class ProductController extends Controller
 {
     use InstallmentsTrait;
     use CheckContentLimitationTrait;
-
+    
     public function searchLists(Request $request)
     {
+        
+        
         $data = $request->all();
 
         $query = Product::where('products.status', Product::$active)
@@ -190,6 +192,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
+        
         $user = null;
        
         if (auth()->check()) {

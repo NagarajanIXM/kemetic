@@ -123,6 +123,7 @@ class AddCartController extends Controller
 
     public function storeUserProductCart($user, $data, $user_as_a_guest)
     {
+        // print_r($user_as_a_guest);die;
         $product_id = (int) $data['item_id'];
         $specifications = $data['specifications'] ?? null;
         $quantity = $data['quantity'] ?? 1;
@@ -188,7 +189,6 @@ class AddCartController extends Controller
     public function store(Request $request)
     {
         $user = apiAuth();
-        //echo print_r($user); die;
         validateParam($request->all(), [
             'item_id' => 'required',
             'item_name' => 'required|in:webinar,bundle,product',
@@ -246,6 +246,7 @@ class AddCartController extends Controller
         return apiResponse2(1, 'stored', trans('cart.cart_add_success_msg'));
 
     }
+
 
     public function destroy($id)
     {

@@ -17,6 +17,8 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\Api\UserFirebaseSessions;
+
 
 class RegisterController extends Controller
 {
@@ -51,53 +53,70 @@ class RegisterController extends Controller
         $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
         $data = $request->all();
         $username = $this->username();
-
+    
         if ($registerMethod !== $username && $username) {
             return apiResponse2(0, 'invalid_register_method', trans('api.auth.invalid_register_method'));
         }
-
+    
         $rules = [
             'country_code' => ($username == 'mobile') ? 'required' : 'nullable',
-            // if the username is unique check
-            //   $username => ($username == 'mobile') ? 'required|numeric|unique:users' : 'required|string|email|max:255|unique:users',
             $username => ($username == 'mobile') ? 'required|numeric' : 'required|string|email|max:255',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required|same:password',
         ];
-
+    
         validateParam($data, $rules);
+    
         if ($username == 'mobile') {
             $data[$username] = ltrim($data['country_code'], '+') . ltrim($data[$username], '0');
-
         }
+    
         $userCase = User::where($username, $data[$username])->first();
+    
         if ($userCase) {
-            //  $userCase->update(['password' => Hash::make($data['password'])]);
+            // Update password and generate token
+            $userCase->update(['password' => Hash::make($data['password'])]);
+            $token = auth('api')->tokenById($userCase->id);
+    
+            // Store or update Firebase session
+            UserFirebaseSessions::updateOrCreate(
+                ['user_id' => $userCase->id],
+                [
+                    "token" => $token,
+                    "ip" => $request->ip(),
+                    "fcm_token" => $request->input('fcm_token', ''),
+                ]
+            );
+            
+            $userCase->update([
+                'logged_count' => max(0, $userCase->logged_count + 1)
+            ]);
+
+    
             $verificationController = new VerificationController();
             $checkConfirmed = $verificationController->checkConfirmed($userCase, $username, $data[$username]);
-
+    
             if ($checkConfirmed['status'] == 'verified') {
                 if ($userCase->full_name) {
                     return apiResponse2(0, 'already_registered', trans('api.auth.already_registered'));
                 } else {
-                    $userCase->update(['password' => Hash::make($data['password'])]);
                     return apiResponse2(0, 'go_step_3', trans('api.auth.go_step_3'), [
-                        'user_id' => $userCase->id
+                        'user_id' => $userCase->id,
+                        'token' => $token,
                     ]);
                 }
             } else {
-                $userCase->update(['password' => Hash::make($data['password'])]);
                 return apiResponse2(0, 'go_step_2', trans('api.auth.go_step_2'), [
-                    'user_id' => $userCase->id
+                    'user_id' => $userCase->id,
+                    'token' => $token,
                 ]);
             }
-
         }
-
-
+    
+        // Create new user
         $referralSettings = getReferralSettings();
-        $usersAffiliateStatus = (!empty($referralSettings) and !empty($referralSettings['users_affiliate_status']));
-
+        $usersAffiliateStatus = (!empty($referralSettings) && !empty($referralSettings['users_affiliate_status']));
+    
         $user = User::create([
             'role_name' => Role::$user,
             'role_id' => Role::getUserRoleId(),
@@ -105,68 +124,59 @@ class RegisterController extends Controller
             'status' => User::$pending,
             'password' => Hash::make($data['password']),
             'affiliate' => $usersAffiliateStatus,
-            'created_at' => time()
+            'created_at' => time(),
+        ]);
+    
+        // Generate token for the new user
+        $token = auth('api')->tokenById($user->id);
+    
+        // Store Firebase session
+        UserFirebaseSessions::create([
+            "user_id" => $user->id,
+            "token" => $token,
+            "ip" => $request->ip(),
+            "fcm_token" => $request->input('fcm_token', ''),
+        ]);
+        $user->update([
+            'logged_count' => 1
         ]);
 
+    
+        // Handle additional certificate data
         if (!empty($data['certificate_additional'])) {
-            UserMeta::updateOrCreate([
-                'user_id' => $user->id,
-                'name' => 'certificate_additional'
-            ], [
-                'value' => $data['certificate_additional']
-            ]);
+            UserMeta::updateOrCreate(
+                ['user_id' => $user->id, 'name' => 'certificate_additional'],
+                ['value' => $data['certificate_additional']]
+            );
         }
-
+    
+        // Validate and store form fields
         $form = $this->getFormFieldsByType($request->get('account_type'));
         $errors = [];
-
+    
         if (!empty($form)) {
             $fieldErrors = $this->checkFormRequiredFields($request, $form);
-
-            if (!empty($fieldErrors) and count($fieldErrors)) {
+    
+            if (!empty($fieldErrors) && count($fieldErrors)) {
                 foreach ($fieldErrors as $id => $error) {
                     $errors[$id] = $error;
                 }
             }
         }
-
+    
         if (count($errors)) {
             return apiResponse2(0, 'login', trans('api.auth.login'), $errors);
         }
-
+    
         $this->storeFormFields($data, $user);
+    
+        // Verify the user
         $verificationController = new VerificationController();
         $verificationController->checkConfirmed($user, $username, $data[$username]);
-
-
-
-        $userCase = User::where($username, $data[$username])->first();
-        if ($userCase) {
-            //  $userCase->update(['password' => Hash::make($data['password'])]);
-            $verificationController = new VerificationController();
-            $checkConfirmed = $verificationController->checkConfirmed($userCase, $username, $data[$username]);
-
-            if ($checkConfirmed['status'] == 'verified') {
-                if ($userCase->full_name) {
-                    return apiResponse2(0, 'already_registered', trans('api.auth.already_registered'));
-                } else {
-                    $userCase->update(['password' => Hash::make($data['password'])]);
-                    return apiResponse2(0, 'go_step_3', trans('api.auth.go_step_3'), [
-                        'user_id' => $userCase->id
-                    ]);
-                }
-            } else {
-                $userCase->update(['password' => Hash::make($data['password'])]);
-                return apiResponse2(0, 'go_step_2', trans('api.auth.go_step_2'), [
-                    'user_id' => $userCase->id
-                ]);
-            }
-
-        }
-
-
-        return apiResponse2('1', 'stored', trans('api.public.stored'), [
-            'user_id' => $user->id
+    
+        return apiResponse2(1, 'stored', trans('api.public.stored'), [
+            'user_id' => $user->id,
+            'token' => $token,
         ]);
     }
 

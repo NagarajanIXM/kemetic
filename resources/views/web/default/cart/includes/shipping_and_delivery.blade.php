@@ -5,54 +5,66 @@
 
             @if(!empty(getStoreSettings('show_address_selection_in_cart')))
             <div class="col-12 col-lg-6">
-                <!--@php $name = explode(" ",$user->full_name); @endphp-->
-                <!--<div class="form-group">-->
-                <!--    <label class="input-label font-weight-500">{{ trans('update.first_name') }}</label>-->
-                <!--    <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" -->
-                <!--           value="{{ array_key_exists(0,$name) ? $name[0] : '' }}">-->
                 
-                <!--    @error('first_name')-->
-                <!--    <div class="invalid-feedback">-->
-                <!--        {{ $message }}-->
-                <!--    </div>-->
-                <!--    @enderror-->
-                <!--</div>-->
+                @if(empty($user))
+                {{--  @php   $name = explode(" ",$user->full_name); @endphp --}}
                 
-                <!--<div class="form-group">-->
-                <!--    <label class="input-label font-weight-500">{{ trans('update.last_name') }}</label>-->
-                <!--    <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" -->
-                <!--           value="{{ array_key_exists(1,$name) ? $name[1] : '' }}">-->
+                <div class="form-group">
+                    <input type="hidden" name="create_account" value="0">
+                    <input type="checkbox" name="create_account" class="@error('create_account') is-invalid @enderror" 
+                           value="1">
+                    <label class="input-label font-weight-500"><b>Create an account with kemetic app</b></label>
+                </div>
                 
-                <!--    @error('last_name')-->
-                <!--    <div class="invalid-feedback">-->
-                <!--        {{ $message }}-->
-                <!--    </div>-->
-                <!--    @enderror-->
-                <!--</div>-->
+                <div class="form-group">
+                    <label class="input-label font-weight-500">{{ trans('update.first_name') }}</label>
+                    <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" 
+                           value="">
                 
-                <!--<div class="form-group">-->
-                <!--    <label class="input-label font-weight-500">{{ trans('update.email') }}</label>-->
-                <!--    <input type="text" name="email" class="form-control @error('email') is-invalid @enderror" -->
-                <!--           value="{{ !empty($user) ? $user->email : '' }}">-->
+                    @error('first_name')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
                 
-                <!--    @error('email')-->
-                <!--    <div class="invalid-feedback">-->
-                <!--        {{ $message }}-->
-                <!--    </div>-->
-                <!--    @enderror-->
-                <!--</div>-->
+                <div class="form-group">
+                    <label class="input-label font-weight-500">{{ trans('update.last_name') }}</label>
+                    <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" 
+                           value="">
                 
-                <!--<div class="form-group">-->
-                <!--    <label class="input-label font-weight-500">Phone</label>-->
-                <!--    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" -->
-                <!--           value="{{ !empty($user) ? $user->mobile : '' }}">-->
+                    @error('last_name')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
                 
-                <!--    @error('phone')-->
-                <!--    <div class="invalid-feedback">-->
-                <!--        {{ $message }}-->
-                <!--    </div>-->
-                <!--    @enderror-->
-                <!--</div>-->
+                <div class="form-group">
+                    <label class="input-label font-weight-500">{{ trans('update.email') }}</label>
+                    <input type="text" name="email" class="form-control @error('email') is-invalid @enderror" 
+                           value="{{ !empty($user) ? $user->email : '' }}">
+                
+                    @error('email')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label font-weight-500">Phone</label>
+                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" 
+                           value="{{ !empty($user) ? $user->mobile : '' }}">
+                
+                    @error('phone')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
+                
+                @endif
                 
                 <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.country') }}</label>
@@ -201,6 +213,12 @@
             @endif
 
             <div class="col-12 {{ !empty(getStoreSettings('show_address_selection_in_cart')) ? 'col-lg-6' : '' }}">
+                
+                <div class="form-group">
+                    <label class="input-label font-weight-500"></label>
+                </div>
+                
+                
                 <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.address') }}</label>
 

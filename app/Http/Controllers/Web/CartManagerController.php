@@ -132,11 +132,11 @@ class CartManagerController extends Controller
                             if (!empty($cart['item_name']) and !empty($cart['item_id'])) {
 
                                 if ($cart['item_name'] == 'webinar_id') {
-                                    $this->storeUserWebinarCart($user, $cart);
+                                    $this->storeUserWebinarCart($user, $cart,false);
                                 } elseif ($cart['item_name'] == 'product_id') {
-                                    $this->storeUserProductCart($user, $cart);
+                                    $this->storeUserProductCart($user, $cart,false);
                                 } elseif ($cart['item_name'] == 'bundle_id') {
-                                    $this->storeUserBundleCart($user, $cart);
+                                    $this->storeUserBundleCart($user, $cart,false);
                                 }
                             }
                         }
@@ -150,7 +150,7 @@ class CartManagerController extends Controller
         }
     }
 
-    public function storeUserWebinarCart($user, $data)
+    public function storeUserWebinarCart($user, $data, $user_as_a_guest)
     {
         $webinar_id = $data['item_id'];
         $ticket_id = $data['ticket_id'] ?? null;
@@ -169,14 +169,28 @@ class CartManagerController extends Controller
 
             $activeSpecialOffer = $webinar->activeSpecialOffer();
 
-            Cart::updateOrCreate([
-                'creator_id' => $user->id,
-                'webinar_id' => $webinar_id,
-            ], [
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time()
-            ]);
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id' => 0,
+                    'creator_guest_id' => $user->id,
+                    'webinar_id' => $webinar_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
+                    'creator_id' => $user->id,
+                    'webinar_id' => $webinar_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            
 
             return 'ok';
         }
@@ -189,7 +203,7 @@ class CartManagerController extends Controller
         return back()->with(['toast' => $toastData]);
     }
 
-    public function storeUserBundleCart($user, $data)
+    public function storeUserBundleCart($user, $data, $user_as_a_guest)
     {
         $bundle_id = $data['item_id'];
         $ticket_id = $data['ticket_id'] ?? null;
@@ -207,15 +221,27 @@ class CartManagerController extends Controller
 
             $activeSpecialOffer = $bundle->activeSpecialOffer();
 
-            Cart::updateOrCreate([
-                'creator_id' => $user->id,
-                'bundle_id' => $bundle_id,
-            ], [
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time()
-            ]);
-
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id' => 0,
+                    'creator_guest_id' => $user->id,
+                    'bundle_id' => $bundle_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
+                    'creator_id' => $user->id,
+                    'bundle_id' => $bundle_id,
+                ], [
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time()
+                ]);
+            }
             return 'ok';
         }
 
@@ -227,7 +253,7 @@ class CartManagerController extends Controller
         return back()->with(['toast' => $toastData]);
     }
 
-    public function storeUserProductCart($user, $data)
+    public function storeUserProductCart($user, $data, $user_as_a_guest)
     {
         $product_id = $data['item_id'];
         $specifications = $data['specifications'] ?? null;
@@ -259,13 +285,25 @@ class CartManagerController extends Controller
                 'created_at' => time()
             ]);
 
-            Cart::updateOrCreate([
-                'creator_id' => $user->id,
-                'product_order_id' => $productOrder->id,
-            ], [
-                'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-                'created_at' => time()
-            ]);
+            if($user_as_a_guest){
+                Cart::updateOrCreate([
+                    'creator_id' => 0,
+                    'creator_guest_id' => $user->id,
+                    'product_order_id' => $productOrder->id,
+                ], [
+                    'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time()
+                ]);
+            }
+            else{
+                Cart::updateOrCreate([
+                    'creator_id' => $user->id,
+                    'product_order_id' => $productOrder->id,
+                ], [
+                    'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time()
+                ]);
+            }
 
             return 'ok';
         }
@@ -281,7 +319,7 @@ class CartManagerController extends Controller
     public function storeCookieCart($data)
     {
         $carts = Cookie::get($this->cookieKey);
-
+       
         if (!empty($carts)) {
             $carts = json_decode($carts, true);
         } else {
@@ -296,12 +334,13 @@ class CartManagerController extends Controller
         }
 
         $carts[$item_name . '_' . $item_id] = $data;
-
+ 
         Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
     }
 
     public function store(Request $request)
     {
+        
         $user = auth()->user();
 
         $this->validate($request, [
@@ -311,12 +350,24 @@ class CartManagerController extends Controller
 
         $data = $request->except('_token');
         $item_name = $data['item_name'];
-
-        if (!empty($user)) { // store in DB
+        $user_as_a_guest=false;
+        if (empty($user)) {
+            $user = new \stdClass(); // Create an empty object for guest users
+            
+            $deviceId = session('device_id');
+            if (!$deviceId) {
+                $deviceId = 'guest_' . uniqid();
+                session(['device_id' => $deviceId]);
+            }
+            
+            $user->id = $deviceId ?? null;
+            $user_as_a_guest=true;
+        }
+        //if (!empty($user)) { // store in DB
             $result = null;
 
             if ($item_name == 'webinar_id') {
-                $result = $this->storeUserWebinarCart($user, $data);
+                $result = $this->storeUserWebinarCart($user, $data,$user_as_a_guest);
             } elseif ($item_name == 'product_id') {
                 $productOrder = ProductOrder::where('product_id', $request->input('item_id'))->where('buyer_id', $user->id)->first();
                 if (!empty($productOrder)) {
@@ -330,17 +381,17 @@ class CartManagerController extends Controller
                     }
                 }
 
-                $result = $this->storeUserProductCart($user, $data);
+                $result = $this->storeUserProductCart($user, $data,$user_as_a_guest);
             } elseif ($item_name == 'bundle_id') {
-                $result = $this->storeUserBundleCart($user, $data);
+                $result = $this->storeUserBundleCart($user, $data,$user_as_a_guest);
             }
 
             if ($result != 'ok') {
                 return $result;
             }
-        } else { // store in cookie
-            $this->storeCookieCart($data);
-        }
+        //} else { // store in cookie
+            //$this->storeCookieCart($data);
+        //}
 
         $toastData = [
             'title' => trans('cart.cart_add_success_title'),
@@ -385,17 +436,33 @@ class CartManagerController extends Controller
                 $cart->delete();
             }
         } else {
-            $carts = Cookie::get($this->cookieKey);
+            
+            if (session()->has('device_id')) {
+                $deviceId = session('device_id');
+                
+                $cart = Cart::where('id', $id)
+                ->where('creator_guest_id', $deviceId)
+                ->first();
 
-            if (!empty($carts)) {
-                $carts = json_decode($carts, true);
-
-                if (!empty($carts[$id])) {
-                    unset($carts[$id]);
+                if (!empty($cart)) {
+                        $cart->delete();
                 }
-
-                Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
             }
+            else{
+                return redirect('/cart');
+            }
+            
+            // $carts = Cookie::get($this->cookieKey);
+
+            // if (!empty($carts)) {
+            //     $carts = json_decode($carts, true);
+
+            //     if (!empty($carts[$id])) {
+            //         unset($carts[$id]);
+            //     }
+
+            //     Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
+            // }
         }
 
         return response()->json([

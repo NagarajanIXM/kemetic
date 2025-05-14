@@ -86,7 +86,7 @@ class LoginController extends Controller
 
         if ($user->status != User::$active and !$verify) {
             // auth('api')->logout();
-            auth('api')->logout();
+            //auth('api')->logout();
             //  dd(apiAuth());
             $verificationController = new VerificationController();
             $checkConfirmed = $verificationController->checkConfirmed($user, $this->username(), $request->input('username'));

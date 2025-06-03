@@ -1228,3 +1228,38 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[15-May-2025 12:11:14 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[15-May-2025 12:11:14 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[18-May-2025 14:32:45 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[18-May-2025 14:32:45 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[18-May-2025 16:17:24 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[18-May-2025 16:17:24 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[24-May-2025 03:17:35 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[24-May-2025 03:17:35 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[28-May-2025 12:07:46 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[28-May-2025 12:07:46 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[29-May-2025 21:22:45 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[29-May-2025 21:22:45 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46
+[29-May-2025 21:37:51 UTC] PHP Warning:  require(/home/kemeticweb/public_html/public/old/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kemeticweb/public_html/public/old/index.php on line 46
+[29-May-2025 21:37:51 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kemeticweb/public_html/public/old/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/kemeticweb/public_html/public/old/index.php:46
+Stack trace:
+#0 {main}
+  thrown in /home/kemeticweb/public_html/public/old/index.php on line 46

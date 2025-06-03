@@ -207,23 +207,26 @@ class Channel extends BasePaymentChannel implements IChannel
         $data = $request->all();
         Log::info('verify request CHANNEL : ', $data);
         $status = $data['status'];
-
         $order_id = session()->get($this->order_session_key, null) ?? $data['order_id'];
         Log::info('order_id : ', [$order_id]);
         session()->forget($this->order_session_key);
 
         $user = auth()->user() ?? apiAuth();
         if(!$user){
-            $userid = $request->device_id;
+            if (session()->has('device_id')) {
+                $userid = session('device_id');
+            }
+            if ($request->has('device_id') && $request->device_id != '') {
+                $userid = $request->device_id;
+            } 
         }else{
             $userid = $user->id;
         }
+        
         $order = Order::where('id', $order_id)
             ->where('user_id', $userid)
             ->first();
-
-    //      echo "<pre>";print_r($order);
-    //  die();
+        
         if ($status == 'success' and !empty($request->session_id) and !empty($order)) {
             Stripe::setApiKey($this->api_secret);
 

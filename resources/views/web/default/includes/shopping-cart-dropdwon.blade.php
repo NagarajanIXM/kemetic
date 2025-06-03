@@ -1,5 +1,4 @@
 <div class="dropdown">
-
     @if((empty($userCarts) or count($userCarts) < 1) and !empty($userCartDiscount))
         <a href="/cart" class="btn btn-transparent">
             <i data-feather="shopping-cart" width="20" height="20" class="mr-10"></i>

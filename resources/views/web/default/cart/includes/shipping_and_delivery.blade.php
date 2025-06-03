@@ -41,6 +41,28 @@
                 </div>
                 
                 <div class="form-group">
+                    <label class="input-label font-weight-500">{{ trans('update.address') }}</label>
+
+                    <textarea name="address" rows="6" class="form-control @error('address')  is-invalid @enderror">{{ !empty($user) ? $user->address : '' }}</textarea>
+
+                    @error('address')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label font-weight-500">House No.</label>
+                    <input type="text" name="house_no" id="house_no" value="{{ !empty($user) ? $user->house_no : '' }}" class="form-control @error('house_no')  is-invalid @enderror">
+                    @error('house_no')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
+                
+                <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.email') }}</label>
                     <input type="text" name="email" class="form-control @error('email') is-invalid @enderror" 
                            value="{{ !empty($user) ? $user->email : '' }}">
@@ -90,7 +112,7 @@
                 <!--<input type="hidden" name="city_id" value="0">-->
                 
                 <div class="form-group">
-                    <label class="input-label font-weight-500">{{ trans('update.province') }}</label>
+                    <label class="input-label font-weight-500">Province/State/District</label>
                     <input type="text" name="province_name" class="form-control @error('province_name') is-invalid @enderror" 
                            value="{{ !empty($user) ? $user->province_name : '' }}">
                 
@@ -189,7 +211,6 @@
                 <!--    @enderror-->
                 <!--</div>-->
 
-                <!-- //aditya -->
                 <div class="form-group">
                     <label class="input-label font-weight-500">Zip Code</label>
                     <input type="text" name="zip_code" id="zip_code" value="{{ !empty($user) ? $user->zip_code : '' }}" class="form-control @error('zip_code')  is-invalid @enderror">
@@ -199,16 +220,7 @@
                     </div>
                     @enderror
                 </div>
-                <div class="form-group">
-                    <label class="input-label font-weight-500">House No.</label>
-                    <input type="text" name="house_no" id="house_no" value="{{ !empty($user) ? $user->house_no : '' }}" class="form-control @error('house_no')  is-invalid @enderror">
-                    @error('house_no')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                    @enderror
-                </div>
-                <!-- //aditya -->
+                
             </div>
             @endif
 
@@ -218,18 +230,6 @@
                     <label class="input-label font-weight-500"></label>
                 </div>
                 
-                
-                <div class="form-group">
-                    <label class="input-label font-weight-500">{{ trans('update.address') }}</label>
-
-                    <textarea name="address" rows="6" class="form-control @error('address')  is-invalid @enderror">{{ !empty($user) ? $user->address : '' }}</textarea>
-
-                    @error('address')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                    @enderror
-                </div>
 
                 <div class="form-group">
                     <label class="input-label font-weight-500">{{ trans('update.message_to_seller') }}</label>

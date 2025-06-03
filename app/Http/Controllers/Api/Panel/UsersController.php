@@ -384,7 +384,7 @@ class UsersController extends Controller
             'address' => 'required|max:255',
             'house_no' => 'required',
             'zip_code' => 'required',
-            'province_id' => 'required',
+            /*'province_id' => 'required',*/
             'city_id' => 'required',
             'create_account' => 'required'
         ]);

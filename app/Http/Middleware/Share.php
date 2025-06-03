@@ -46,7 +46,10 @@ class Share
         }
         else{
             $deviceId = session('device_id');
-    
+            if (!$deviceId) {
+                $deviceId = 'guest_' . uniqid();
+                session(['device_id' => $deviceId]);
+            }
             // Mimic a user object
             //$user = new \stdClass();
             //$user->id = $deviceId;
@@ -57,6 +60,7 @@ class Share
                     }
                 ])
                 ->get();
+                
         }
 
 

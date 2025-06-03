@@ -66,7 +66,13 @@ class Cart extends Model
 
     public static function emptyCart($userId)
     {
-        Cart::where('creator_id', $userId)->delete();
+        if(!is_numeric($userId)){
+             Cart::where('creator_guest_id', $userId)->delete();
+        }
+        else{
+             Cart::where('creator_id', $userId)->delete();
+        }
+       
     }
     
     public static function emptyWithoutLoginCart($userId)

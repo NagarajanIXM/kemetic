@@ -446,7 +446,7 @@ class PaymentController extends Controller
 
     public function paymentRequest(Request $request)
     {
-        
+        //echo "<pre>"; print_r($request->all()); die;
         $this->validate($request, [
             'gateway' => 'required'
         ]);
@@ -475,6 +475,8 @@ class PaymentController extends Controller
             ->where('user_id', $userid)
             ->first();
 
+        session()->put($this->order_session_key, $orderId);
+        
         if ($order->type === Order::$meeting) {
             $orderItem = OrderItem::where('order_id', $order->id)->first();
             $reserveMeeting = ReserveMeeting::where('id', $orderItem->reserve_meeting_id)->first();
@@ -542,7 +544,7 @@ class PaymentController extends Controller
 
     public function paymentVerify(Request $request, $gateway)
     {
-        // echo 1;die;
+        //echo 1;die;
         Log::info('paymentVerify CONTROLLER : ', $request->all());
         Log::info('gateway NAME : ', [$gateway]);
         $paymentChannel = PaymentChannel::where('class_name', $gateway)
@@ -551,9 +553,10 @@ class PaymentController extends Controller
 
         try {
             $channelManager = ChannelManager::makeChannel($paymentChannel);
+            // echo "<pre>"; print_r($channelManager); 
             // die('ghjgh');
             $order = $channelManager->verify($request);
-            //  print_r($order);die;
+            //echo "<pre>"; print_r($order); die;
             return $this->paymentOrderAfterVerify($order);
 
         } catch (\Exception $exception) {
@@ -562,7 +565,6 @@ class PaymentController extends Controller
                 'msg' => trans('cart.gateway_error'),
                 'status' => 'error'
             ];
-            // echo $exception->getMessage();die;
             return redirect('cart')->with(['toast' => $toastData]);
         }
     }
@@ -624,6 +626,7 @@ class PaymentController extends Controller
 
     private function paymentOrderAfterVerify($order)
     {
+        //echo "<pre>"; print_r($order); die;
         if (!empty($order)) {
 
             if ($order->status == Order::$paying) {
@@ -660,6 +663,7 @@ class PaymentController extends Controller
 
     public function setPaymentAccounting($order, $type = null)
     {
+        
         $cashbackAccounting = new CashbackAccounting();
 
         if ($order->is_charge_account) {
@@ -667,6 +671,7 @@ class PaymentController extends Controller
 
             $cashbackAccounting->rechargeWallet($order);
         } else {
+            //echo "<pre>"; print_r($order->orderItems); die;
             foreach ($order->orderItems as $orderItem) {
                 $sale = Sale::createSales($orderItem, $order->payment_method);
 
@@ -739,10 +744,31 @@ class PaymentController extends Controller
             session()->forget($this->order_session_key);
         }
 
+        $user = auth()->user();
+        
+        if(!$user){
+            if (session()->has('device_id')) {
+                $guestuser = new \stdClass(); // Create an empty object for guest users
+                $guestuser->id = session('device_id');
+                $userid = $guestuser->id;
+            }
+            else{
+                return redirect('/cart');
+            }
+        }
+        else{
+            $userid = $user->id;
+        }
+        
+        
+        // $order = Order::where('id', $orderId)
+        //     ->where('user_id', auth()->id())
+        //     ->first();
+        
         $order = Order::where('id', $orderId)
-            ->where('user_id', auth()->id())
-            ->first();
-
+             ->where('user_id', $userid)
+             ->first();
+        
         if (!empty($order)) {
             $data = [
                 'pageTitle' => trans('public.cart_page_title'),

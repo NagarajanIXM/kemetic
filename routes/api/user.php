@@ -137,10 +137,12 @@ Route::group([], function () {
     Route::group(['prefix' => '/cart'], function () {
         // Route::get('list', ['uses' => 'CartController@index']);
         Route::post('list', ['uses' => 'CartController@index']);
+        
         Route::delete('{id}', ['uses' => 'CartController@destroy']);
+        //Route::post('{id}', ['uses' => 'CartController@destroy']);
         // Route::post('coupon/validate', ['uses' => 'CartController@validateCoupon']); 
         Route::post('coupon/validate', [App\Http\Controllers\Web\CartController::class, 'couponValidate']);
-        Route::post('checkout', ['uses' => 'CartController@checkout']);
+        Route::post('checkout', ['uses' => 'CartController@checkout']); 
         Route::post('store', ['uses' => 'CartController@store']);
         Route::post('/', ['uses' => 'AddCartController@store']);
         Route::post('web_checkout', ['uses' => 'CartController@webCheckoutGenerator']);

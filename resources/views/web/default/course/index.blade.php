@@ -302,6 +302,12 @@
                                             {!! trans('update.buy_with_n_points',['points' => $course->points]) !!}
                                         </a>
                                     @endif
+                                    
+                                    @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
+                                        <button type="button" class="btn btn-outline-danger mt-20 js-course-direct-payment">
+                                            {{ trans('update.buy_now') }}
+                                        </button>
+                                    @endif
 
 
                                     @if(!empty($installments) and count($installments) and getInstallmentsSettings('display_installment_button'))

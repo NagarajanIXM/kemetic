@@ -142,10 +142,12 @@
             {{ csrf_field() }}
             <input type="hidden" name="discount_id" value="">
 
-            @if($hasPhysicalProduct)
+            {{-- @if($hasPhysicalProduct)
                 @include('web.default.cart.includes.shipping_and_delivery')
-            @endif
-
+            @endif --}} 
+            
+            @include('web.default.cart.includes.shipping_and_delivery')
+            
             <div class="row mt-30">
                 <div class="col-12 col-lg-6">
                     <section class="mt-45">

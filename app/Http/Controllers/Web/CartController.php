@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\User;
 use Carbon\Carbon;
+use App\Models\Region;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -113,6 +115,7 @@ class CartController extends Controller
     
     public function index(Request $request)
     {
+        
         $user = auth()->user();
         $isGuest = false;
         
@@ -176,6 +179,10 @@ class CartController extends Controller
                 ->where('enable', true)
                 ->first();
     
+            $countries = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
+            ->where('type', Region::$country)
+            ->get();
+            
             $data = [
                 'pageTitle' => trans('public.cart_page_title'),
                 'user' => $isGuest ? null : $user,
@@ -192,6 +199,7 @@ class CartController extends Controller
                 'deliveryEstimateTime' => $deliveryEstimateTime,
                 'totalCashbackAmount' => $totalCashbackAmount,
                 'cartDiscount' => $cartDiscount,
+                'countries' => $countries
             ];
     
             if (!$isGuest) {
@@ -600,7 +608,7 @@ class CartController extends Controller
                 'email'        => ['required', 'email', 'max:255'],
                 'phone'        => ['required', 'string', 'max:20'],
                 'country_id'   => ['required', 'integer'],
-                'province_name'=> ['required', 'string', 'max:100'],
+                /*'province_name'=> ['required', 'string', 'max:100'],*/
                 'city_name'    => ['required', 'string', 'max:100'],
                 'address'      => ['required', 'string', 'max:255'],
                 'house_no'     => ['required', 'string', 'max:50'],
@@ -609,9 +617,6 @@ class CartController extends Controller
             $this->validate($request, $rules);
         }
 
-        
-
-       
         $discountId = $request->input('discount_id');
 
         $paymentChannels = PaymentChannel::where('status', 'active')->get();
@@ -634,6 +639,9 @@ class CartController extends Controller
             }
 
             if (count($hasPhysicalProduct) > 0) {
+                $this->updateProductOrders($request, $carts, $user,$user_as_a_guest);
+            }
+            elseif($user_as_a_guest){
                 $this->updateProductOrders($request, $carts, $user,$user_as_a_guest);
             }
 

@@ -94,12 +94,32 @@ class CartController extends Controller
         return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), ["cart" => $cartt]);
     }
 
-    public function destroy($id)
+    public function destroy($id,Request $request)
     {
-        $user_id = apiAuth()->id;
-        $cart = Cart::where('id', $id)
+        
+        $user = apiAuth();
+        if(!$user){
+            $user = new \stdClass(); // Create an empty object for guest users
+            $user->id = $request->input('device_id') ?? null;
+            $user_as_a_guest=true;
+            if (!$user->id) {
+                return apiResponse2(0, 'invalid_device_id', 'Device ID is required for guest users.');
+            }
+            $user_id = $user->id;
+            $cart = Cart::where('id', $id)
+            ->where('creator_guest_id',$user_id)
+            ->first();
+       
+        }
+        else{
+            $user_id = $user->id;
+            $cart = Cart::where('id', $id)
             ->where('creator_id', $user_id)
             ->first();
+            
+        }
+        
+        
         abort_unless($cart, 404);
 
         if (!empty($cart->reserve_meeting_id)) {
@@ -496,7 +516,10 @@ class CartController extends Controller
             }
 
             if (count($hasPhysicalProduct) > 0) {
-                $this->updateProductOrders($request, $carts, $user);
+                $this->updateProductOrders($request, $carts, $user, $user_as_a_guest);
+            }
+            elseif($user_as_a_guest){
+                $this->updateProductOrders($request, $carts, $user, $user_as_a_guest);
             }
 
             if (!empty($order) and $order->total_amount > 0) {
@@ -694,7 +717,7 @@ class CartController extends Controller
         ];
     }
 
-    private function updateProductOrders(Request $request, $carts, $user)
+    private function updateProductOrders(Request $request, $carts, $user,$user_as_a_guest)
     {
         $data = $request->all();
 
@@ -707,14 +730,16 @@ class CartController extends Controller
                     ]);
             }
         }
-
-        $user->update([
-            'country_id' => $data['country_id'] ?? $user->country_id,
-            'province_id' => $data['province_id'] ?? $user->province_id,
-            'city_id' => $data['city_id'] ?? $user->city_id,
-            'district_id' => $data['district_id'] ?? $user->district_id,
-            'address' => $data['address'] ?? $user->address,
-        ]);
+        if(!$user_as_a_guest){
+            $user->update([
+                'country_id' => $data['country_id'] ?? $user->country_id,
+                'province_id' => $data['province_id'] ?? $user->province_id,
+                'city_id' => $data['city_id'] ?? $user->city_id,
+                'district_id' => $data['district_id'] ?? $user->district_id,
+                'address' => $data['address'] ?? $user->address,
+            ]);
+        }
+        
     }
     private function getSeller($cart)
     {

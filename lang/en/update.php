@@ -63,7 +63,7 @@ return [
 'regions' => 'Localization',
 'region' => 'Region',
 'countries' => 'Countries',
-'provinces' => 'Provinces',
+'provinces' => 'Province/State/District',
 'cities' => 'Cities',
 'districts' => 'Districts',
 'country' => 'Country',

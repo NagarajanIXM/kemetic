@@ -73,19 +73,19 @@ We use Stripe, a trusted global payment provider, to ensure your transaction is 
                     @endforeach
                 @endif
 
-                <div class="col-6 col-lg-4 mb-40  charge-account-radio">
-                    <input type="radio" @if(empty($userCharge) or ($total > $userCharge)) disabled @endif name="gateway" id="offline" value="credit">
-                    <label for="offline" class="h-100 rounded-sm p-20 p-lg-45 d-flex flex-column align-items-center justify-content-center">
-                        <img src="/assets/default/img/activity/pay.svg" width="120" height="60" alt="">
+                <!--<div class="col-6 col-lg-4 mb-40  charge-account-radio">-->
+                <!--    <input type="radio" {{-- @if(empty($userCharge) or ($total > $userCharge)) --}} disabled {{-- @endif --}} name="gateway" id="offline" value="credit">-->
+                <!--    <label for="offline" class="h-100 rounded-sm p-20 p-lg-45 d-flex flex-column align-items-center justify-content-center">-->
+                <!--        <img src="/assets/default/img/activity/pay.svg" width="120" height="60" alt="">-->
 
-                        <p class="mt-30 mt-lg-50 font-weight-500 text-dark-blue">
-                            {{ trans('financial.account') }}
-                            <span class="font-weight-bold">{{ trans('financial.charge') }}</span>
-                        </p>
+                <!--        <p class="mt-30 mt-lg-50 font-weight-500 text-dark-blue">-->
+                <!--            {{-- {{ trans('financial.account') }} --}}-->
+                <!--            <span class="font-weight-bold">{{-- {{ trans('financial.charge') }} --}}</span>-->
+                <!--        </p>-->
 
-                        <span class="mt-5">{{ handlePrice($userCharge) }}</span>
-                    </label>
-                </div>
+                <!--        <span class="mt-5">{{-- {{ handlePrice($userCharge) }} --}}</span>-->
+                <!--    </label>-->
+                <!--</div>-->
             </div>
 
             @if(!empty($invalidChannels) and empty(getFinancialSettings("hide_disabled_payment_gateways")))

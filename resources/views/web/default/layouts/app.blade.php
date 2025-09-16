@@ -15,12 +15,16 @@
     <link rel="stylesheet" href="{{ asset('/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css')}}">
     <link rel="stylesheet" href="{{ asset('/assets/default/vendors/toast/jquery.toast.min.css')}}">
     <link rel="stylesheet" href="{{ asset('/assets/default/vendors/simplebar/simplebar.css')}}">
-    <!-- <link rel="stylesheet" href="/assets/default/css/app.css"> -->
-    <!--<link rel="stylesheet" href="{{ asset('/assets/default/css/app.css') }}">-->
-    <link rel="stylesheet" href="/assets/default/css/app.css">
+
+    {{-- <link rel="stylesheet" href="/assets/default/css/app.css"> --}}
+    <link rel="preload" href="{{ asset('/assets/default/css/app.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ asset('/assets/default/css/app.css') }}"></noscript>
+
 
     @if($isRtl)
-        <link rel="stylesheet" href="{{ asset('/assets/default/css/rtl-app.css')}}">
+        {{-- <link rel="stylesheet" href="{{ asset('/assets/default/css/rtl-app.css')}}"> --}}
+    <link rel="preload" href="{{ asset('/assets/default/css/rtl-app.css')}}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ asset('/assets/default/css/rtl-app.css')}}"></noscript>
     @endif
 
     @stack('styles_top')
@@ -38,7 +42,7 @@
     @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
         @include('admin.includes.preloading')
     @endif
-    
+
 
 </head>
 
@@ -143,22 +147,10 @@
 <script>
     $(document).ready(function() {
         var $list = $('.marquee-item-list');
-        var $clone = $list.children('li').clone(); 
-        $list.append($clone); 
+        var $clone = $list.children('li').clone();
+        $list.append($clone);
     });
 </script>
-<!--Start of Tawk.to Script-->
-<!-- <script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/670f464c4304e3196ad23354/1ia9ql7o6';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script> -->
-<!--End of Tawk.to Script-->
+
 </body>
 </html>

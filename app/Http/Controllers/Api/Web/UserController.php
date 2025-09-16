@@ -92,7 +92,7 @@ class UserController extends Controller
     {
         $offset = $request->input('offset', 0); // Default offset is 0
         $limit = $request->input('limit', 10); // Default limit is 10
-        
+
         $query = User::whereIn('role_name', $role)
             ->where('users.status', 'active')
             ->where(function ($query) {
@@ -102,27 +102,27 @@ class UserController extends Controller
                             ->orWhere('users.ban_end_at', '<', time());
                     });
             });
-        
+
         if ($has_meeting) {
             $query->whereHas('meeting');
         }
-        
+
         // Apply the filter providers function
         $query = $this->filterProviders($request, deepClone($query), $role);
-        
+
         // Fetch paginated results using skip and take
         $users = $query->skip($offset)->take($limit)->get()
             ->map(function ($user) {
                 return $user->brief;
             });
-        
+
         return [
             'count' => count($users), // Total count of all users without limit/offset
             'users' => $users, // Limited user data
             'offset' => $offset,
             'limit' => $limit,
         ];
-        
+
 
     }
 

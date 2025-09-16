@@ -106,7 +106,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     Route::post('/set-currency', 'SetCurrencyController@setCurrency');
 
     Route::get('/', 'HomeController@index');
-    
+
 
     Route::get('/getDefaultAvatar', 'DefaultAvatarController@make');
 
@@ -223,7 +223,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
             Route::get('/', 'CartController@index');
             Route::post('/checkout', 'CartController@checkout')->name('checkout');
     });
-            
+
     Route::group(['prefix' => 'meetings'], function () {
         Route::post('/reserve', 'MeetingController@reserve');
     });
@@ -243,7 +243,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
         Route::post('/verify/{gateway}', ['as' => 'payment_verify_post', 'uses' => 'PaymentController@paymentVerify']);
         Route::get('/status', 'PaymentController@payStatus');
         Route::get('/payku/callback/{id}', 'PaymentController@paykuPaymentVerify')->name('payku.result');
-       
+
     });
 
     Route::group(['prefix' => 'subscribes'], function () {

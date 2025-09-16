@@ -11,12 +11,15 @@
         $showOtherRegisterMethod = getFeaturesSettings('show_other_register_method') ?? false;
         $showCertificateAdditionalInRegister = getFeaturesSettings('show_certificate_additional_in_register') ?? false;
         $selectRolesDuringRegistration = getFeaturesSettings('select_the_role_during_registration') ?? null;
+
+
     @endphp
+        <pre>{{ print_r($selectRolesDuringRegistration, true) }}</pre>
 
     <div class="container">
         <div class="row login-container">
             <div class="col-12 col-md-6 pl-0">
-                <img src="{{ getPageBackgroundSettings('register') }}" class="img-cover" alt="Login">
+                <img src="{{ getPageBackgroundSettings('register') }}" class="img-cover" alt="Login" loading="lazy">
             </div>
             <div class="col-12 col-md-6">
                 <div class="login-card">
